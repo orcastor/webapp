@@ -17,9 +17,19 @@ const onSubmit = (values:any) => {
     .post('/api/login')
     .send(loginForm)
     .end(function (err:any, res:any) {
-      Notify({ type: 'success', message: '登录成功' });
+      if(err) {
+        Notify({ type: 'warning', message: "服务器错误，请稍候重试" });
+      } else if(res.statusCode != 200) {
+        Notify({ type: 'warning', message: "服务器错误，请稍候重试，错误码："+res.statusCode });
+      } else {
+        var resp = JSON.parse(res.text);
+        if(!resp.code) {
+          Notify({ type: 'success', message: '登录成功' });
+        } else {
+          Notify({ type: 'warning', message: resp.msg });
+        }
+      }
       loading.value = false;
-      console.log(err)
     });
 };
 </script>
