@@ -1,14 +1,26 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
-import { Login } from "@/api/interface";
+import { Login } from "./api/interface";
+import { Notify } from 'vant';
+import superagent from 'superagent';
+import 'vant/es/notify/style';
 // 登录表单数据
 const loginForm = reactive<Login.ReqLoginForm>({
   username: "",
   password: "",
 });
+
 const loading = ref(false);
 const onSubmit = (values:any) => {
   loading.value = true;
+  superagent
+    .post('/api/login')
+    .send(loginForm)
+    .end(function (err:any, res:any) {
+      Notify({ type: 'success', message: '登录成功' });
+      loading.value = false;
+      console.log(err)
+    });
 };
 </script>
 

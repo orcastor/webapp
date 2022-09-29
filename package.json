@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "superagent": "^8.0.0",
     "vant": "^3.6.3",
     "vue": "^3.2.37"
   },
