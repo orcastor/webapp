@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
-import { Login } from "./api/interface";
+import { Login } from "@/api/interface";
 import { Notify } from 'vant';
-import superagent from 'superagent';
+import { loginApi } from "@/api/modules/login";
+import { GlobalStore } from "@/store";
 import 'vant/es/notify/style';
 // 登录表单数据
 const loginForm = reactive<Login.ReqLoginForm>({
@@ -10,27 +11,19 @@ const loginForm = reactive<Login.ReqLoginForm>({
   password: "",
 });
 
+const globalStore = GlobalStore();
 const loading = ref(false);
-const onSubmit = (values:any) => {
+const onSubmit = async () => {
   loading.value = true;
-  superagent
-    .post('/api/login')
-    .send(loginForm)
-    .end(function (err:any, res:any) {
-      if(err) {
-        Notify({ type: 'warning', message: "服务器错误，请稍候重试" });
-      } else if(res.statusCode != 200) {
-        Notify({ type: 'warning', message: "服务器错误，请稍候重试，错误码："+res.statusCode });
-      } else {
-        var resp = JSON.parse(res.text);
-        if(!resp.code) {
-          Notify({ type: 'success', message: '登录成功' });
-        } else {
-          Notify({ type: 'warning', message: resp.msg });
-        }
-      }
+  try {
+      const res = await loginApi(loginForm);
+      // 存储 token
+      globalStore.setToken(res.data!.access_token);
+      globalStore.setUserInfo(res.data!.user);
+      Notify({ type: 'success', message: '登录成功' });
+    } finally {
       loading.value = false;
-    });
+    }
 };
 </script>
 

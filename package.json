@@ -9,7 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "superagent": "^8.0.0",
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.2",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "pinia": "^2.0.22",
+    "pinia-plugin-persistedstate": "^2.2.0",
+    "qs": "^6.11.0",
     "vant": "^3.6.3",
     "vue": "^3.2.37"
   },
