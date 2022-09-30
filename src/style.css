@@ -31,7 +31,7 @@ h1 {
 
 button,input {
   width: 100%;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid transparent;
   margin: 16px 0;
   padding: 0.6em 3.2em;
@@ -48,13 +48,18 @@ button,input {
 button {
   background-color: #1a1a1a;
 }
-input:hover,button:hover {
-  color: #aaa;
-  filter: drop-shadow(0 0 2px #888);
-}
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+.logo {
+  height: 6em;
+  will-change: filter;
+}
+.logo:hover, input:hover,button:hover {
+  color: #aaa;
+  filter: drop-shadow(0 0 2px #888);
 }
 
 #app {
