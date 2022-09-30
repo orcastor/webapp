@@ -32,8 +32,8 @@ const onSubmit = async () => {
     <a href="https://github.com/orcastor/orcas" target="_blank">
       <img src="/logo.svg" class="logo" alt="orcas logo" />
     </a>
-    <input placeholder="请输入用户名" v-model="loginForm.username">
-    <input type="password" placeholder="请输入密码" v-model="loginForm.password">
+    <input placeholder="输入用户名" v-model="loginForm.username">
+    <input type="password" placeholder="输入密码" v-model="loginForm.password">
     <button type="submit">登录</button>
   </van-form>
 </template>
@@ -45,6 +45,6 @@ const onSubmit = async () => {
   will-change: filter;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2px #aaa);
+  filter: drop-shadow(0 0 2px #888);
 }
 </style>
