@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { Login } from "@/api/interface";
 import { loginApi } from "@/api/modules/login";
 import { GlobalStore } from "@/store";
@@ -13,6 +14,7 @@ const loginForm = reactive<Login.ReqLoginForm>({
 
 const globalStore = GlobalStore();
 const loading = ref(false);
+const router = useRouter();
 const onSubmit = async () => {
   loading.value = true;
   try {
@@ -21,6 +23,7 @@ const onSubmit = async () => {
       globalStore.setToken(res.data!.access_token);
       globalStore.setUserInfo(res.data!.user);
       Notify({ type: 'success', message: '登录成功' });
+      router.push({ name: "home" });
     } finally {
       loading.value = false;
     }
