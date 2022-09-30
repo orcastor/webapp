@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import { Login } from "@/api/interface";
-import { Notify } from 'vant';
 import { loginApi } from "@/api/modules/login";
 import { GlobalStore } from "@/store";
+import { Notify } from 'vant';
 import 'vant/es/notify/style';
 // 登录表单数据
 const loginForm = reactive<Login.ReqLoginForm>({
@@ -32,30 +32,9 @@ const onSubmit = async () => {
     <a href="https://github.com/orcastor/orcas" target="_blank">
       <img src="/logo.svg" class="logo" alt="orcas logo" />
     </a>
-    <van-cell-group inset>
-      <van-field
-        v-model="loginForm.username"
-        placeholder="请输入用户名"
-        maxlength=20
-        enterkeyhint="done"
-      />
-    </van-cell-group>
-    <br />
-    <van-cell-group inset>
-      <van-field
-        v-model="loginForm.password"
-        placeholder="请输入密码"
-        maxlength=20
-        enterkeyhint="done"
-        type="password"
-      />
-    </van-cell-group>
-    <br />
-    <div style="margin: 16px;">
-      <van-button :loading="loading" round block type="primary" native-type="submit">
-        登录
-      </van-button>
-    </div>
+    <input placeholder="请输入用户名" v-model="loginForm.username">
+    <input type="password" placeholder="请输入密码" v-model="loginForm.password">
+    <button type="submit">登录</button>
   </van-form>
 </template>
 

@@ -4,14 +4,91 @@ import axios, {
   AxiosRequestConfig,
   AxiosResponse,
 } from "axios";
-import { AxiosCanceler } from "./helper/axiosCancel";
 import { ResultData } from "@/api/interface";
-import { ResultEnum } from "@/enums/httpEnum";
-import { checkStatus } from "./helper/checkStatus";
 import { Notify } from 'vant';
 import 'vant/es/notify/style';
 import { GlobalStore } from "@/store";
 // import router from "@/routers";
+
+// * 请求枚举配置
+/**
+ * @description：请求配置
+ */
+ export enum ResultEnum {
+  SUCCESS = 200,
+  ERROR = 500,
+  OVERDUE = 599,
+  TIMEOUT = 10000,
+  TYPE = "success",
+}
+
+/**
+ * @description：请求方法
+ */
+export enum RequestEnum {
+  GET = "GET",
+  POST = "POST",
+  PATCH = "PATCH",
+  PUT = "PUT",
+  DELETE = "DELETE",
+}
+
+/**
+ * @description：常用的contentTyp类型
+ */
+export enum ContentTypeEnum {
+  // json
+  JSON = "application/json;charset=UTF-8",
+  // text
+  TEXT = "text/plain;charset=UTF-8",
+  // form-data 一般配合qs
+  FORM_URLENCODED = "application/x-www-form-urlencoded;charset=UTF-8",
+  // form-data 上传
+  FORM_DATA = "multipart/form-data;charset=UTF-8",
+}
+
+
+/**
+ * @description: 校验网络请求状态码
+ * @param {Number} status
+ * @return void
+ */
+const checkStatus = (status: number): void => {
+  switch (status) {
+    case 400:
+      Notify({ type: 'warning', message: "请求失败！请您稍后重试" });
+      break;
+    case 401:
+      Notify({ type: 'warning', message: "登录失效！请您重新登录" });
+      break;
+    case 403:
+      Notify({ type: 'warning', message: "当前账号无权限访问！" });
+      break;
+    case 404:
+      Notify({ type: 'warning', message: "你所访问的资源不存在！" });
+      break;
+    case 405:
+      Notify({ type: 'warning', message: "请求方式错误！请您稍后重试" });
+      break;
+    case 408:
+      Notify({ type: 'warning', message: "请求超时！请您稍后重试" });
+      break;
+    case 500:
+      Notify({ type: 'warning', message: "服务异常！" });
+      break;
+    case 502:
+      Notify({ type: 'warning', message: "网关错误！" });
+      break;
+    case 503:
+      Notify({ type: 'warning', message: "服务不可用！" });
+      break;
+    case 504:
+      Notify({ type: 'warning', message: "网关超时！" });
+      break;
+    default:
+      Notify({ type: 'warning', message: "请求失败！" });
+  }
+};
 
 /**
  * pinia 错误使用说明示例
@@ -20,8 +97,6 @@ import { GlobalStore } from "@/store";
  * https://pinia.vuejs.org/core-concepts/outside-component-usage.html#single-page-applications
  */
 // const globalStore = GlobalStore();
-
-const axiosCanceler = new AxiosCanceler();
 
 const config = {
   // 默认地址请求地址，可在 .env 开头文件中修改
@@ -46,8 +121,6 @@ class RequestHttp {
     this.service.interceptors.request.use(
       (config: AxiosRequestConfig) => {
         const globalStore = GlobalStore();
-        // * 将当前请求添加到 pending 中
-        axiosCanceler.addPending(config);
         const token: string = globalStore.token;
         return {
           ...config,
@@ -67,8 +140,6 @@ class RequestHttp {
       (response: AxiosResponse) => {
         const { data, config } = response;
         const globalStore = GlobalStore();
-        // * 在请求结束后，移除本次请求，并关闭请求 loading
-        axiosCanceler.removePending(config);
         // * 登陆失效（code == 599）
         if (data.code == ResultEnum.OVERDUE) {
           Notify({ type: 'warning', message: data.msg });
