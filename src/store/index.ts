@@ -13,6 +13,8 @@ export const GlobalStore = defineStore({
     token: "",
     // userInfo
     userInfo: "",
+    // buckets
+    bkts: "",
   }),
   getters: {},
   actions: {
@@ -23,6 +25,10 @@ export const GlobalStore = defineStore({
     // setUserInfo
     setUserInfo(userInfo: any) {
       this.userInfo = userInfo;
+    },
+    // setBkts
+    setBkts(bkts: any) {
+      this.bkts = bkts;
     },
   },
   persist: piniaPersistConfig("GlobalState"),
