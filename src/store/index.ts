@@ -1,5 +1,5 @@
 import { defineStore, createPinia } from "pinia";
-import { GlobalState } from "./interface";
+import { GlobalState, MenuState } from "./interface";
 import piniaPersistConfig from "@/config/piniaPersist";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 
@@ -32,6 +32,22 @@ export const GlobalStore = defineStore({
     },
   },
   persist: piniaPersistConfig("GlobalState"),
+});
+
+// MenuStore
+export const MenuStore = defineStore({
+  id: "MenuState",
+  state: (): MenuState => ({
+    // menu collapse
+    isCollapse: false,
+  }),
+  getters: {},
+  actions: {
+    async setCollapse() {
+      this.isCollapse = !this.isCollapse;
+    },
+  },
+  persist: piniaPersistConfig("MenuState"),
 });
 
 // piniaPersist(持久化)

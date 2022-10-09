@@ -47,6 +47,7 @@ const submitForm = async () => {
   max-width: 300px;
   margin: auto;
   flex: 1;
+  text-align: center;
 }
 
 .login button, .login input {

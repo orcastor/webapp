@@ -4,3 +4,8 @@ export interface GlobalState {
   userInfo: any;
   bkts: any;
 }
+
+/* MenuState */
+export interface MenuState {
+  isCollapse: boolean;
+}
