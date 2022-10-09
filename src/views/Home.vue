@@ -5,13 +5,15 @@
       :width="isCollapse ? '64px' : '200px'"
     >
       <div class="logo flx-center">
-        <img src="/logo.svg" alt="logo" />
+        <a href="https://github.com/orcastor/orcas" target="_blank">
+          <img src="/logo.svg" alt="logo" />
+        </a>
         <span v-show="!isCollapse"></span>
       </div>
       <el-menu
         active-text-color="#ffd04b"
         background-color="#1a1a1a"
-        :default-active="0"
+        :default-active="bktIdx"
         text-color="#fff"
         :collapse="isCollapse"
       >
@@ -37,7 +39,12 @@
         </div>
       </el-header>
       <el-main class="main">
-        <el-table :data="tableData" style="width: 100%;">
+        <el-empty v-if="tableData.length==0" description="空目录" />
+        <el-table v-else
+        :data="tableData"
+        style="width: 100%;"
+        @row-click="onClick"
+        >
           <el-table-column width="56">
             <template #default="scope">
               <el-image :src=toIcon(scope) style="width: 32px;"/>
@@ -68,9 +75,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { GlobalStore, MenuStore } from "@/store";
+import { useRouter } from "vue-router";
 import extension from "@/config/extension";
 import Breadcrumb from "@/views/components/Breadcrumb.vue";
 
+const router = useRouter();
+const bktIdx = ref(0);
 const tableData = ref([
   {
     id: 10623110873088,
@@ -185,33 +195,26 @@ const bkts = computed(() => globalStore.bkts);
 
 const menuStore = MenuStore();
 const isCollapse = computed((): boolean => menuStore.isCollapse);
+const breadcrumbs = computed((): any[] => menuStore.breadcrumbs);
 
 function toSize(scope:any):string {
   if(scope.row.type == 2) {
     let sz = scope.row.size||0;
-    if(sz < 1e3) {
-      return sz + '  B';
-    }
-    if(sz < 1e6) {
-      return (sz/1024.).toFixed(2) + ' KB';
-    }
-    if(sz < 1e9) {
-      return (sz/1048576.).toFixed(2) + ' MB';
-    }
+    if(sz < 1e3) { return sz + '  B'; }
+    if(sz < 1e6) { return (sz/1024.).toFixed(2) + ' KB'; }
+    if(sz < 1e9) { return (sz/1048576.).toFixed(2) + ' MB'; }
     return (sz/1073741824.).toFixed(2) + ' GB';
   }
   return '-';
 }
 
 function toIcon(scope:any):string {
-  if(scope.row.type == 1) {return '/assets/icons/dir.svg';}
+  if(scope.row.type == 1) {return '/icons/dir.svg';}
   if(scope.row.type == 2) {
     let pos = scope.row.name.lastIndexOf('.');
-    if(pos >= 0) {
-      return '/assets/icons/' + extension(scope.row.name.substr(pos+1)) + '.svg';
-    }
+    if(pos >= 0) { return '/icons/' + extension(scope.row.name.substr(pos+1)) + '.svg'; }
   }
-  return '/assets/icons/none.svg';
+  return '/icons/none.svg';
 }
 
 // aside 自适应
@@ -230,16 +233,25 @@ const listeningWindow = () => {
 };
 listeningWindow();
 
+const onClick = (row:any, _column:any, _event:any)=> {
+  if(row.type == 1) {
+    let path = '/index';
+    let query = {bid: bkts.value[bktIdx.value].id, pid: row.id};
+    breadcrumbs.value.push({ path, query, meta: {title: row.name}});
+    router.push({ name: "home", query });
+  }
+};
+
 </script>
 
 <style scoped lang="scss">
 .main {
   min-height: 100vh;
   overflow: auto;
-  ::v-deep tr.el-table__row {
+  :deep(tr.el-table__row) {
     cursor: pointer;
   }
-  ::v-deep td.el-table_1_column_3 {
+  :deep(td.el-table_1_column_3) {
     text-align: right;
   }
 }

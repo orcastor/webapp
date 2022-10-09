@@ -24,3 +24,32 @@ export namespace Login {
     [key: string]: any;
   }
 }
+
+export namespace List {
+  export interface ListOption {
+    w: string;
+    d: string;
+    t: number;
+    c: number;
+    o: string;
+    b: number;
+  }
+  export interface ReqList {
+    p: number;
+    b: number;
+    o: ListOption;
+  }
+  export interface ObjectInfo {
+    id: number;
+    pid: number;
+    mtime: number;
+    did: number;
+    type: number;
+    name: string;
+    size: number;
+    ext: any;
+  }
+  export interface ResList {
+    o: [ObjectInfo];
+  }
+}

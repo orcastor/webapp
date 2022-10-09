@@ -40,6 +40,7 @@ export const MenuStore = defineStore({
   state: (): MenuState => ({
     // menu collapse
     isCollapse: false,
+    breadcrumbs: [],
   }),
   getters: {},
   actions: {
