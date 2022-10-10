@@ -20,18 +20,15 @@ export namespace Login {
     user: any;
     bkts: any;
   }
-  export interface ResAuthButtons {
-    [key: string]: any;
-  }
 }
 
 export namespace List {
   export interface ListOption {
-    w: string;
-    d: string;
-    t: number;
+    // w: string;
+    // d: string;
+    // t: number;
     c: number;
-    o: string;
+    // o: string;
     b: number;
   }
   export interface ReqList {
@@ -50,6 +47,6 @@ export namespace List {
     ext: any;
   }
   export interface ResList {
-    o: [ObjectInfo];
+    o: ObjectInfo[];
   }
 }

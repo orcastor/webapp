@@ -1,13 +1,13 @@
 const types:{[key: string]: string} = {
   "audio": "mp3,wav,ape",
-  "doc": "doc,docx,doct,wps",
+  "doc": "doc,docx,doct,wps,pages",
   "link": "lnk",
   "pdf": "pdf",
   "pic": "jpg,jpeg,png,gif,bmp",
-  "ppt": "ppt,pptx,pps",
+  "ppt": "ppt,pptx,pps,keynote",
   "txt": "txt",
   "video": "mp4,rmv,rm,rmvb,mkv,wmv,flv,avi,mov,3gp,mpeg",
-  "xls": "csv,xls,xlsx,xlt",
+  "xls": "csv,xls,xlsx,xlt,numbers",
   "zip": "rar,zip,7z,xz,gz",
 };
 

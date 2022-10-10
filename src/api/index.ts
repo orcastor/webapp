@@ -5,9 +5,14 @@ import axios, {
   AxiosResponse,
 } from "axios";
 import { ResultData } from "@/api/interface";
-import { ElMessage } from 'element-plus'
 import { GlobalStore } from "@/store";
 // import router from "@/routers";
+
+var callback:({}) => void = ((_o) => {});
+
+export function setCallback(cb:({}) => void) {
+    callback = cb;
+}
 
 // * 请求枚举配置
 /**
@@ -46,7 +51,6 @@ export enum ContentTypeEnum {
   FORM_DATA = "multipart/form-data;charset=UTF-8",
 }
 
-
 /**
  * @description: 校验网络请求状态码
  * @param {Number} status
@@ -55,37 +59,37 @@ export enum ContentTypeEnum {
 const checkStatus = (status: number): void => {
   switch (status) {
     case 400:
-      ElMessage({ type: 'warning', message: "请求失败！请您稍后重试" });
+      callback({ type: 'warning', message: "请求失败！请您稍后重试" });
       break;
     case 401:
-      ElMessage({ type: 'warning', message: "登录失效！请您重新登录" });
+      callback({ type: 'warning', message: "登录失效！请您重新登录" });
       break;
     case 403:
-      ElMessage({ type: 'warning', message: "当前账号无权限访问！" });
+      callback({ type: 'warning', message: "当前账号无权限访问！" });
       break;
     case 404:
-      ElMessage({ type: 'warning', message: "你所访问的资源不存在！" });
+      callback({ type: 'warning', message: "你所访问的资源不存在！" });
       break;
     case 405:
-      ElMessage({ type: 'warning', message: "请求方式错误！请您稍后重试" });
+      callback({ type: 'warning', message: "请求方式错误！请您稍后重试" });
       break;
     case 408:
-      ElMessage({ type: 'warning', message: "请求超时！请您稍后重试" });
+      callback({ type: 'warning', message: "请求超时！请您稍后重试" });
       break;
     case 500:
-      ElMessage({ type: 'warning', message: "服务异常！" });
+      callback({ type: 'warning', message: "服务异常！" });
       break;
     case 502:
-      ElMessage({ type: 'warning', message: "网关错误！" });
+      callback({ type: 'warning', message: "网关错误！" });
       break;
     case 503:
-      ElMessage({ type: 'warning', message: "服务不可用！" });
+      callback({ type: 'warning', message: "服务不可用！" });
       break;
     case 504:
-      ElMessage({ type: 'warning', message: "网关超时！" });
+      callback({ type: 'warning', message: "网关超时！" });
       break;
     default:
-      ElMessage({ type: 'warning', message: "请求失败！" });
+      callback({ type: 'warning', message: "请求失败！" });
   }
 };
 
@@ -141,7 +145,7 @@ class RequestHttp {
         const globalStore = GlobalStore();
         // * 登陆失效（code == 599）
         if (data.code == ResultEnum.OVERDUE) {
-          ElMessage({ type: 'warning', message: data.msg });
+          callback({ type: 'warning', message: data.msg });
           globalStore.setToken("");
           /*router.replace({
             path: "/login",
@@ -150,7 +154,7 @@ class RequestHttp {
         }
         // * 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）
         if (data.code && data.code !== ResultEnum.SUCCESS) {
-          ElMessage({ type: 'warning', message: data.msg });
+          callback({ type: 'warning', message: data.msg });
           return Promise.reject(data);
         }
         // * 成功请求（在页面上除非特殊情况，否则不用处理失败逻辑）
@@ -160,7 +164,7 @@ class RequestHttp {
         const { response } = error;
         // 请求超时单独判断，因为请求超时没有 response
         if (error.message.indexOf("timeout") !== -1)
-          ElMessage({ type: 'warning', message: "请求超时！请您稍后重试" });
+          callback({ type: 'warning', message: "请求超时！请您稍后重试" });
         // 根据响应的错误状态码，做不同的处理
         if (response) checkStatus(response.status);
         // 服务器结果都没有返回(可能服务器错误可能客户端断网)，断网处理:可以跳转到断网页面

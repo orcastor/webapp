@@ -7,6 +7,10 @@ import router from "@/routers/index";
 import pinia from "@/store/index"
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
+import { setCallback } from "@/api/index";
+import { ElMessage } from 'element-plus'
+setCallback(ElMessage);
+
 const app = createApp(App);
 app.use(router);
 app.use(pinia);

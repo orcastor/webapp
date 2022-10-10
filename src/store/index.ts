@@ -47,6 +47,9 @@ export const MenuStore = defineStore({
     async setCollapse() {
       this.isCollapse = !this.isCollapse;
     },
+    async clearBreadcrumbs() {
+      this.breadcrumbs = [];
+    },
   },
   persist: piniaPersistConfig("MenuState"),
 });

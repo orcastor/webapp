@@ -73,121 +73,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { GlobalStore, MenuStore } from "@/store";
 import { useRouter } from "vue-router";
 import extension from "@/config/extension";
 import Breadcrumb from "@/views/components/Breadcrumb.vue";
+import { List } from "@/api/interface";
+import { listApi } from "@/api/modules/list";
 
 const router = useRouter();
 const bktIdx = ref(0);
-const tableData = ref([
-  {
-    id: 10623110873088,
-    name: "test",
-    mtime: 1665219348,
-    size: 0,
-    type: 1,
-  },
-  {
-    id: 10623110873089,
-    name: "test1",
-    mtime: 1665219388,
-    size: 0,
-    type: 1,
-  },
-  {
-    id: 10623110873089,
-    name: "test1",
-    mtime: 1665219388,
-    size: 0,
-    type: 1,
-  },
-  {
-    id: 10623110873089,
-    name: "test1",
-    mtime: 1665219388,
-    size: 0,
-    type: 1,
-  },
-  {
-    id: 10623110873089,
-    name: "test1",
-    mtime: 1665219388,
-    size: 0,
-    type: 1,
-  },
-  {
-    id: 10623110873090,
-    name: "test3.Doc",
-    mtime: 1665219388,
-    size: 1203,
-    type: 2,
-  },
-  {
-    id: 10623110873091,
-    name: "test4.bmp",
-    mtime: 1665219388,
-    size: 234,
-    type: 2,
-  },
-  {
-    id: 10623110873092,
-    name: "test5.zip",
-    mtime: 1665219388,
-    size: 10318742815,
-    type: 2,
-  },
-  {
-    id: 10623110873093,
-    name: "test6.pdf",
-    mtime: 1665219388,
-    size: 123123,
-    type: 2,
-  },
-  {
-    id: 10623110873094,
-    name: "test7.wav",
-    mtime: 1665219388,
-    size: 1231231,
-    type: 2,
-  },
-  {
-    id: 10623110873095,
-    name: "test8.ppt",
-    mtime: 1665219388,
-    size: 0,
-    type: 2,
-  },
-  {
-    id: 10623110873096,
-    name: "test9.xls",
-    mtime: 1665219388,
-    size: 1000,
-    type: 2,
-  },
-  {
-    id: 10623110873097,
-    name: "test10.lnk",
-    mtime: 1665219388,
-    size: 1048576,
-    type: 2,
-  },
-  {
-    id: 10623110873098,
-    name: "test11.txt",
-    mtime: 1665219388,
-    size: 104857600,
-    type: 2,
-  },
-  {
-    id: 10623110873099,
-    name: "test12",
-    mtime: 1665219388,
-    size: 1000000,
-    type: 2,
-  }
-]);
+const tableData = ref([]);
 
 const globalStore = GlobalStore();
 const userInfo = computed(() => globalStore.userInfo);
@@ -201,9 +97,9 @@ function toSize(scope:any):string {
   if(scope.row.type == 2) {
     let sz = scope.row.size||0;
     if(sz < 1e3) { return sz + '  B'; }
-    if(sz < 1e6) { return (sz/1024.).toFixed(2) + ' KB'; }
-    if(sz < 1e9) { return (sz/1048576.).toFixed(2) + ' MB'; }
-    return (sz/1073741824.).toFixed(2) + ' GB';
+    if(sz < 1e6) { return (sz/1e3).toFixed(2) + ' KB'; }
+    if(sz < 1e9) { return (sz/1e6).toFixed(2) + ' MB'; }
+    return (sz/1e9).toFixed(2) + ' GB';
   }
   return '-';
 }
@@ -239,9 +135,42 @@ const onClick = (row:any, _column:any, _event:any)=> {
     let query = {bid: bkts.value[bktIdx.value].id, pid: row.id};
     breadcrumbs.value.push({ path, query, meta: {title: row.name}});
     router.push({ name: "home", query });
+    loadData(bkts.value[bktIdx.value].id, row.id);
   }
 };
 
+const loadData = async (bid:number, pid:number) => {
+  try {
+    let o:List.ListOption = {
+      c: 1000,
+      b: 1,
+    }
+    let req:List.ReqList = {
+      b: bid,
+      p: pid,
+      o: o,
+    }
+    const res = await listApi(req);
+    tableData.value = res.data!.o as never || [];
+  } finally {
+  }
+};
+
+watch(() => router.currentRoute.value.query.pid, (_newValue,_oldValue) => {
+  init();
+})
+
+onMounted(() => {
+  menuStore.clearBreadcrumbs();
+  init();
+})
+
+const init = () => {
+  let pid = parseInt(router.currentRoute.value.query.pid+'');
+  if(bkts.value.length > 0) {
+    loadData(bkts.value[bktIdx.value].id, pid);
+  }
+}
 </script>
 
 <style scoped lang="scss">
