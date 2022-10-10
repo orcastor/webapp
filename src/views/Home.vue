@@ -51,7 +51,7 @@
               <el-image :src=toIcon(scope) style="width: 32px;"/>
             </template>
           </el-table-column>
-          <el-table-column prop="name" label="文件名" width="180" />
+          <el-table-column prop="name" label="文件名" min-width="180" />
           <el-table-column label="大小" width="120">
             <template #default="scope">
               {{ toSize(scope) }}

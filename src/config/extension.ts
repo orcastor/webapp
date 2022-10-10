@@ -3,7 +3,7 @@ const types:{[key: string]: string} = {
   "doc": "doc,docx,doct,wps,pages",
   "link": "lnk",
   "pdf": "pdf",
-  "pic": "jpg,jpeg,png,gif,bmp",
+  "pic": "jpg,jpeg,png,gif,bmp,svg,eps,ai,psd",
   "ppt": "ppt,pptx,pps,keynote",
   "txt": "txt",
   "video": "mp4,rmv,rm,rmvb,mkv,wmv,flv,avi,mov,3gp,mpeg",
