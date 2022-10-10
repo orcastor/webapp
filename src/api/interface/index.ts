@@ -22,7 +22,7 @@ export namespace Login {
   }
 }
 
-export namespace List {
+export namespace Object {
   export interface ListOption {
     w?: string;
     d?: string;
@@ -48,5 +48,12 @@ export namespace List {
   }
   export interface ResList {
     o?: ObjectInfo[];
+  }
+  export interface ReqGet {
+    b: number;
+    i: number;
+  }
+  export interface ResGet {
+    o?: ObjectInfo;
   }
 }

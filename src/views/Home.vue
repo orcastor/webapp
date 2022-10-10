@@ -16,6 +16,7 @@
         :default-active="bktIdx"
         text-color="#fff"
         :collapse="isCollapse"
+        @click="onClickMenu"
       >
         <el-menu-item v-for="(b, i) in bkts" :index="i">
           <el-icon><Box /></el-icon>
@@ -78,8 +79,8 @@ import { GlobalStore, MenuStore } from "@/store";
 import { useRouter } from "vue-router";
 import extension from "@/config/extension";
 import Breadcrumb from "@/views/components/Breadcrumb.vue";
-import { List } from "@/api/interface";
-import { listApi } from "@/api/modules/list";
+import { Object } from "@/api/interface";
+import { listApi, getApi } from "@/api/modules/object";
 
 const router = useRouter();
 const bktIdx = ref(0);
@@ -131,7 +132,7 @@ listeningWindow();
 
 const onClick = (row:any, _column:any, _event:any)=> {
   if(row.type == 1) {
-    let path = '/index';
+    let path = '/';
     let query = {b: bkts.value[bktIdx.value].id, p: row.id};
     breadcrumbs.value.push({ path, query, meta: {title: row.name}});
     router.push({ name: "home", query });
@@ -139,14 +140,33 @@ const onClick = (row:any, _column:any, _event:any)=> {
   }
 };
 
+const onClickMenu = () => {
+  loadData(bkts.value[bktIdx.value].id, 0);
+};
+
 const loadData = async (b:number, p:number) => {
   try {
-    let o:List.ListOption = { c: 1000, b: 1 }
-    let req:List.ReqList = { b, p, o }
+    let o:Object.ListOption = { c: 1000, b: 1 }
+    let req:Object.ReqList = { b, p, o }
     const res = await listApi(req);
     tableData.value = res.data!.o as never || [];
   } finally {
   }
+
+  let pp = p;
+  let bc:any[] = [];
+  while(pp != 0) {
+    try {
+      let req:Object.ReqGet = { b, i: pp }
+      const res = await getApi(req);
+      let o = res.data!.o;
+      if(!o) break;
+      pp = o.pid || 0;
+      bc.unshift({ path: '/', query: { b, p: o.id }, meta: {title: o.name}});
+    } finally {
+    }
+  }
+  menuStore.setBreadcrumbs(bc);
 };
 
 watch(() => router.currentRoute.value.query.p, (_newValue,_oldValue) => {
@@ -154,14 +174,14 @@ watch(() => router.currentRoute.value.query.p, (_newValue,_oldValue) => {
 })
 
 onMounted(() => {
-  menuStore.clearBreadcrumbs();
   init();
 })
 
 const init = () => {
   let p = parseInt(router.currentRoute.value.query.p+'');
   if(bkts.value.length > 0) {
-    loadData(bkts.value[bktIdx.value].id, p);
+    let b = bkts.value[bktIdx.value].id as number;
+    loadData(b, p);
   }
 }
 </script>
