@@ -132,31 +132,24 @@ listeningWindow();
 const onClick = (row:any, _column:any, _event:any)=> {
   if(row.type == 1) {
     let path = '/index';
-    let query = {bid: bkts.value[bktIdx.value].id, pid: row.id};
+    let query = {b: bkts.value[bktIdx.value].id, p: row.id};
     breadcrumbs.value.push({ path, query, meta: {title: row.name}});
     router.push({ name: "home", query });
     loadData(bkts.value[bktIdx.value].id, row.id);
   }
 };
 
-const loadData = async (bid:number, pid:number) => {
+const loadData = async (b:number, p:number) => {
   try {
-    let o:List.ListOption = {
-      c: 1000,
-      b: 1,
-    }
-    let req:List.ReqList = {
-      b: bid,
-      p: pid,
-      o: o,
-    }
+    let o:List.ListOption = { c: 1000, b: 1 }
+    let req:List.ReqList = { b, p, o }
     const res = await listApi(req);
     tableData.value = res.data!.o as never || [];
   } finally {
   }
 };
 
-watch(() => router.currentRoute.value.query.pid, (_newValue,_oldValue) => {
+watch(() => router.currentRoute.value.query.p, (_newValue,_oldValue) => {
   init();
 })
 
@@ -166,9 +159,9 @@ onMounted(() => {
 })
 
 const init = () => {
-  let pid = parseInt(router.currentRoute.value.query.pid+'');
+  let p = parseInt(router.currentRoute.value.query.p+'');
   if(bkts.value.length > 0) {
-    loadData(bkts.value[bktIdx.value].id, pid);
+    loadData(bkts.value[bktIdx.value].id, p);
   }
 }
 </script>

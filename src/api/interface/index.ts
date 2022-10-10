@@ -24,12 +24,12 @@ export namespace Login {
 
 export namespace List {
   export interface ListOption {
-    // w: string;
-    // d: string;
-    // t: number;
+    w?: string;
+    d?: string;
+    t?: number;
     c: number;
-    // o: string;
-    b: number;
+    o?: string;
+    b?: number;
   }
   export interface ReqList {
     p: number;
@@ -47,6 +47,6 @@ export namespace List {
     ext: any;
   }
   export interface ResList {
-    o: ObjectInfo[];
+    o?: ObjectInfo[];
   }
 }
