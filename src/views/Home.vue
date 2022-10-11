@@ -38,6 +38,7 @@
         </div>
         <div class="header-ri flx-center">
           <!-- User name -->
+          <el-avatar :size="30" src="/avatar.png" />
           <span class="username">{{userInfo.name}}</span>
         </div>
       </el-header>
@@ -223,7 +224,7 @@ const init = () => {
     }
   }
   .header-ri {
-    margin: 0 30px;
+    margin: 0 20px;
     .header-icon {
       display: flex;
       align-items: center;
@@ -237,7 +238,7 @@ const init = () => {
       }
     }
     .username {
-      margin: 0 20px 0 0;
+      margin: 0 0 0 5px;
       font-size: 15px;
       color: rgb(0 0 0 / 75%);
     }
