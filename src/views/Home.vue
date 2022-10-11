@@ -74,7 +74,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { GlobalStore, MenuStore } from "@/store";
+import { GlobalStore, MenuStore, Cache } from "@/store";
 import { useRouter } from "vue-router";
 import { toIcon } from "@/config/icons";
 import Breadcrumb from "@/views/components/Breadcrumb.vue";
@@ -94,9 +94,11 @@ const menuStore = MenuStore();
 const isCollapse = computed((): boolean => menuStore.isCollapse);
 const breadcrumbs = computed((): any[] => menuStore.breadcrumbs);
 
+const cache = new Cache(100, null);
+
 function toSize(scope:any):string {
   if (scope.row.type == 2) {
-    let sz = scope.row.size||0;
+    const sz = scope.row.size||0;
     if (sz < 1e3) { return sz + '  B'; }
     if (sz < 1e6) { return (sz/1e3).toFixed(2) + ' KB'; }
     if (sz < 1e9) { return (sz/1e6).toFixed(2) + ' MB'; }
@@ -123,10 +125,9 @@ listeningWindow();
 
 const onRowClick = (row:any, _column:any, _event:any)=> {
   if (row.type == 1) {
-    let query = {b: bkts.value[bktIdx.value].id, p: row.id};
+    const query = {b: bkts.value[bktIdx.value].id, p: row.id};
     breadcrumbs.value.push({ path: '/', query, meta: {title: row.name} });
     router.push({ name: "home", query });
-    loadData(bkts.value[bktIdx.value].id, row.id);
   }
 };
 
@@ -136,17 +137,25 @@ const onMenuClick = (item:any) => {
 };
 
 const onRootDir = () => {
-  let b = bkts.value[bktIdx.value].id;
+  const b = bkts.value[bktIdx.value].id;
   menuStore.setBreadcrumbs([]);
   router.push({ name: "home", query: { b } });
 };
 
 const loadData = async (b:number, p:number) => {
   try {
-    let o:Object.ListOption = { c: 1000, b: 1 };
-    let req:Object.ReqList = { b, p, o };
+    const o:Object.ListOption = { c: 1000, b: 1 };
+    const req:Object.ReqList = { b, p, o };
     const res = await listApi(req);
     tableData.value = res.data!.o as never;
+    // 设置到缓存
+    if (tableData.value) {
+      for (let i = 0; i < tableData.value.length; i++) {
+        const f = tableData.value[i] as any;
+        // 只要目录
+        if (f.type == 1) cache.put(b+'-'+f.id, f);
+      }
+    }
   } finally {
   }
 
@@ -154,24 +163,28 @@ const loadData = async (b:number, p:number) => {
   let bc:any[] = [];
   while(pp) {
     try {
-      let req:Object.ReqGet = { b, i: pp };
-      const res = await getApi(req);
-      let o = res.data!.o;
-      if (!o) break;
-      pp = o.pid || 0;
-      bc.unshift({ path: '/', query: { b, p: o.id }, meta: {title: o.name}});
+      let cached = cache.get(b+'-'+pp);
+      if (!cached) {
+        let req:Object.ReqGet = { b, i: pp };
+        const res = await getApi(req);
+        cached = res.data!.o;
+        if (!cached) break;
+        cache.put(b+'-'+pp, cached);
+      }
+      pp = cached.pid || 0;
+      bc.unshift({ path: '/', query: { b, p: cached.id }, meta: {title: cached.name}});
     } finally {
     }
   }
   menuStore.setBreadcrumbs(bc);
 };
 
-watch(() => router.currentRoute.value.query, (_newValue,_oldValue) => {
+watch(() => router.currentRoute.value.query, (_newValue, _oldValue) => {
   init();
 });
 
 const findBktIdx = () => {
-  let b = router.currentRoute.value.query.b;
+  const b = router.currentRoute.value.query.b;
   if (b) {
     for (let i = 0; i < bkts.value.length; i++) {
       if (bkts.value[i].id == b) {
@@ -190,12 +203,13 @@ onMounted(() => {
 
 const init = () => {
   findBktIdx();
-  let p = parseInt(router.currentRoute.value.query.p+'');
+  const p = parseInt(router.currentRoute.value.query.p+'');
   if (bkts.value.length > 0) {
-    let b = bkts.value[bktIdx.value].id as number;
+    const b = bkts.value[bktIdx.value].id as number;
     loadData(b, p);
   }
 };
+
 </script>
 
 <style scoped lang="scss">
