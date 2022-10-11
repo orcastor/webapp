@@ -88,8 +88,6 @@ const checkStatus = (status: number): void => {
     case 504:
       callback({ type: 'warning', message: "网关超时！" });
       break;
-    default:
-      callback({ type: 'warning', message: "请求失败！" });
   }
 };
 

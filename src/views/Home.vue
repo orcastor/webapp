@@ -13,7 +13,7 @@
       <el-menu
         active-text-color="#ffd04b"
         background-color="#1a1a1a"
-        :default-active="0"
+        :default-active="bktIdx"
         text-color="#fff"
         :collapse="isCollapse"
       >
@@ -53,20 +53,16 @@
               <el-image :src=toIcon(scope.row) style="width: 32px;"/>
             </template>
           </el-table-column>
-          <el-table-column prop="name" label="文件名" min-width="180" />
+          <el-table-column label="文件名" min-width="180" show-overflow-tooltip>
+            <template #default="scope">
+              <div><strong>{{ scope.row.name }}</strong></div>
+              <span>{{ new Date(scope.row.mtime*1000).toLocaleString() }}</span>
+              <!-- new Date((scope.row.id/Math.pow(2,22)+1662688799)*1000).toLocaleString() -->
+            </template>
+          </el-table-column>
           <el-table-column label="大小" width="120">
             <template #default="scope">
               {{ toSize(scope) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="上传时间" width="180">
-            <template #default="scope">
-              {{ new Date((scope.row.id/Math.pow(2,22)+1662688799)*1000).toLocaleString() }}
-            </template>
-          </el-table-column>
-          <el-table-column label="修改时间" width="180">
-            <template #default="scope">
-              {{ new Date(scope.row.mtime*1000).toLocaleString() }}
             </template>
           </el-table-column>
         </el-table>
@@ -98,11 +94,11 @@ const isCollapse = computed((): boolean => menuStore.isCollapse);
 const breadcrumbs = computed((): any[] => menuStore.breadcrumbs);
 
 function toSize(scope:any):string {
-  if(scope.row.type == 2) {
+  if (scope.row.type == 2) {
     let sz = scope.row.size||0;
-    if(sz < 1e3) { return sz + '  B'; }
-    if(sz < 1e6) { return (sz/1e3).toFixed(2) + ' KB'; }
-    if(sz < 1e9) { return (sz/1e6).toFixed(2) + ' MB'; }
+    if (sz < 1e3) { return sz + '  B'; }
+    if (sz < 1e6) { return (sz/1e3).toFixed(2) + ' KB'; }
+    if (sz < 1e9) { return (sz/1e6).toFixed(2) + ' MB'; }
     return (sz/1e9).toFixed(2) + ' GB';
   }
   return '-';
@@ -125,7 +121,7 @@ const listeningWindow = () => {
 listeningWindow();
 
 const onRowClick = (row:any, _column:any, _event:any)=> {
-  if(row.type == 1) {
+  if (row.type == 1) {
     let query = {b: bkts.value[bktIdx.value].id, p: row.id};
     breadcrumbs.value.push({ path: '/', query, meta: {title: row.name} });
     router.push({ name: "home", query });
@@ -139,15 +135,15 @@ const onMenuClick = (item:any) => {
 };
 
 const onRootDir = () => {
-  let b = bktIdx.value;
+  let b = bkts.value[bktIdx.value].id;
   menuStore.setBreadcrumbs([]);
   router.push({ name: "home", query: { b } });
 };
 
 const loadData = async (b:number, p:number) => {
   try {
-    let o:Object.ListOption = { c: 1000, b: 1 }
-    let req:Object.ReqList = { b, p, o }
+    let o:Object.ListOption = { c: 1000, b: 1 };
+    let req:Object.ReqList = { b, p, o };
     const res = await listApi(req);
     tableData.value = res.data!.o as never;
   } finally {
@@ -155,12 +151,12 @@ const loadData = async (b:number, p:number) => {
 
   let pp = p;
   let bc:any[] = [];
-  while(pp != 0) {
+  while(pp) {
     try {
-      let req:Object.ReqGet = { b, i: pp }
+      let req:Object.ReqGet = { b, i: pp };
       const res = await getApi(req);
       let o = res.data!.o;
-      if(!o) break;
+      if (!o) break;
       pp = o.pid || 0;
       bc.unshift({ path: '/', query: { b, p: o.id }, meta: {title: o.name}});
     } finally {
@@ -171,20 +167,34 @@ const loadData = async (b:number, p:number) => {
 
 watch(() => router.currentRoute.value.query, (_newValue,_oldValue) => {
   init();
-})
+});
+
+const findBktIdx = () => {
+  let b = router.currentRoute.value.query.b;
+  if (b) {
+    for (let i = 0; i < bkts.value.length; i++) {
+      if (bkts.value[i].id == b) {
+        bktIdx.value = i;
+        return;
+      }
+    }
+  }
+  onRootDir();
+};
 
 onMounted(() => {
   init();
   loading.value = false;
-})
+});
 
 const init = () => {
+  findBktIdx();
   let p = parseInt(router.currentRoute.value.query.p+'');
-  if(bkts.value.length > 0) {
+  if (bkts.value.length > 0) {
     let b = bkts.value[bktIdx.value].id as number;
     loadData(b, p);
   }
-}
+};
 </script>
 
 <style scoped lang="scss">
@@ -193,9 +203,6 @@ const init = () => {
   overflow: auto;
   :deep(tr.el-table__row) {
     cursor: pointer;
-  }
-  :deep(td.el-table_1_column_3) {
-    text-align: right;
   }
 }
 .header {
