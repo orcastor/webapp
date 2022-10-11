@@ -13,12 +13,11 @@
       <el-menu
         active-text-color="#ffd04b"
         background-color="#1a1a1a"
-        :default-active="bktIdx"
+        :default-active="0"
         text-color="#fff"
         :collapse="isCollapse"
-        @click="onRootDir"
       >
-        <el-menu-item v-for="(b, i) in bkts" :index="i">
+        <el-menu-item v-for="(b, i) in bkts" :index="i" @click="onMenuClick">
           <el-icon><Box /></el-icon>
           <template #title>
             <span>{{ b.name }}</span>
@@ -134,12 +133,15 @@ const onRowClick = (row:any, _column:any, _event:any)=> {
   }
 };
 
+const onMenuClick = (item:any) => {
+  bktIdx.value = item.index;
+  onRootDir();
+};
+
 const onRootDir = () => {
-  if(parseInt(router.currentRoute.value.query.p+'') > 0) {
-    menuStore.setBreadcrumbs([]);
-    router.push({ name: "home", query: {b: bkts.value[bktIdx.value].id} });
-    loadData(bkts.value[bktIdx.value].id, 0);
-  }
+  let b = bktIdx.value;
+  menuStore.setBreadcrumbs([]);
+  router.push({ name: "home", query: { b } });
 };
 
 const loadData = async (b:number, p:number) => {
@@ -167,7 +169,7 @@ const loadData = async (b:number, p:number) => {
   menuStore.setBreadcrumbs(bc);
 };
 
-watch(() => router.currentRoute.value.query.p, (_newValue,_oldValue) => {
+watch(() => router.currentRoute.value.query, (_newValue,_oldValue) => {
   init();
 })
 
