@@ -16,7 +16,7 @@
         :default-active="bktIdx"
         text-color="#fff"
         :collapse="isCollapse"
-        @click="onClickMenu"
+        @click="onRootDir"
       >
         <el-menu-item v-for="(b, i) in bkts" :index="i">
           <el-icon><Box /></el-icon>
@@ -32,6 +32,9 @@
           <el-icon class="collapse-icon" @click="menuStore.setCollapse()">
             <component :is="isCollapse ? 'expand' : 'fold'"></component>
           </el-icon>
+          <el-icon class="collapse-icon" @click="onRootDir">
+            <HomeFilled />
+          </el-icon>
           <Breadcrumb id="breadcrumb" />
         </div>
         <div class="header-ri flx-center">
@@ -39,16 +42,16 @@
           <span class="username">{{userInfo.name}}</span>
         </div>
       </el-header>
-      <el-main class="main">
-        <el-empty v-if="tableData.length==0" description="空目录" />
+      <el-main class="main" v-loading="loading">
+        <el-empty v-if="!tableData" description="空目录" />
         <el-table v-else
         :data="tableData"
         style="width: 100%;"
-        @row-click="onClick"
+        @row-click="onRowClick"
         >
           <el-table-column width="56">
             <template #default="scope">
-              <el-image :src=toIcon(scope) style="width: 32px;"/>
+              <el-image :src=toIcon(scope.row) style="width: 32px;"/>
             </template>
           </el-table-column>
           <el-table-column prop="name" label="文件名" min-width="180" />
@@ -57,7 +60,7 @@
               {{ toSize(scope) }}
             </template>
           </el-table-column>
-          <el-table-column label="创建时间" width="180">
+          <el-table-column label="上传时间" width="180">
             <template #default="scope">
               {{ new Date((scope.row.id/Math.pow(2,22)+1662688799)*1000).toLocaleString() }}
             </template>
@@ -77,7 +80,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { GlobalStore, MenuStore } from "@/store";
 import { useRouter } from "vue-router";
-import extension from "@/config/extension";
+import { toIcon } from "@/config/icons";
 import Breadcrumb from "@/views/components/Breadcrumb.vue";
 import { Object } from "@/api/interface";
 import { listApi, getApi } from "@/api/modules/object";
@@ -85,6 +88,7 @@ import { listApi, getApi } from "@/api/modules/object";
 const router = useRouter();
 const bktIdx = ref(0);
 const tableData = ref([]);
+const loading = ref(true);
 
 const globalStore = GlobalStore();
 const userInfo = computed(() => globalStore.userInfo);
@@ -105,15 +109,6 @@ function toSize(scope:any):string {
   return '-';
 }
 
-function toIcon(scope:any):string {
-  if(scope.row.type == 1) {return '/icons/dir.svg';}
-  if(scope.row.type == 2) {
-    let pos = scope.row.name.lastIndexOf('.');
-    if(pos >= 0) { return '/icons/' + extension(scope.row.name.substr(pos+1)) + '.svg'; }
-  }
-  return '/icons/none.svg';
-}
-
 // aside 自适应
 const screenWidth = ref<number>(0);
 // 监听窗口大小变化，合并 aside
@@ -130,18 +125,21 @@ const listeningWindow = () => {
 };
 listeningWindow();
 
-const onClick = (row:any, _column:any, _event:any)=> {
+const onRowClick = (row:any, _column:any, _event:any)=> {
   if(row.type == 1) {
-    let path = '/';
     let query = {b: bkts.value[bktIdx.value].id, p: row.id};
-    breadcrumbs.value.push({ path, query, meta: {title: row.name}});
+    breadcrumbs.value.push({ path: '/', query, meta: {title: row.name} });
     router.push({ name: "home", query });
     loadData(bkts.value[bktIdx.value].id, row.id);
   }
 };
 
-const onClickMenu = () => {
-  loadData(bkts.value[bktIdx.value].id, 0);
+const onRootDir = () => {
+  if(parseInt(router.currentRoute.value.query.p+'') > 0) {
+    menuStore.setBreadcrumbs([]);
+    router.push({ name: "home", query: {b: bkts.value[bktIdx.value].id} });
+    loadData(bkts.value[bktIdx.value].id, 0);
+  }
 };
 
 const loadData = async (b:number, p:number) => {
@@ -149,7 +147,7 @@ const loadData = async (b:number, p:number) => {
     let o:Object.ListOption = { c: 1000, b: 1 }
     let req:Object.ReqList = { b, p, o }
     const res = await listApi(req);
-    tableData.value = res.data!.o as never || [];
+    tableData.value = res.data!.o as never;
   } finally {
   }
 
@@ -175,6 +173,7 @@ watch(() => router.currentRoute.value.query.p, (_newValue,_oldValue) => {
 
 onMounted(() => {
   init();
+  loading.value = false;
 })
 
 const init = () => {

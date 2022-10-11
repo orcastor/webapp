@@ -3,12 +3,12 @@ const types:{[key: string]: string} = {
   "doc": "doc,docx,doct,wps,pages",
   "link": "lnk",
   "pdf": "pdf",
-  "pic": "jpg,jpeg,png,gif,bmp,svg,eps,ai,psd",
+  "pic": "jpg,jpeg,png,gif,bmp,svg,eps,ai,psd,ico",
   "ppt": "ppt,pptx,pps,keynote",
-  "txt": "txt",
+  "txt": "txt,php,js,ts,tsx,vue,py,cpp,c,h,md,htm,html,css,go,xml,json,toml,yml,sh,java",
   "video": "mp4,rmv,rm,rmvb,mkv,wmv,flv,avi,mov,3gp,mpeg",
   "xls": "csv,xls,xlsx,xlt,numbers",
-  "zip": "rar,zip,7z,xz,gz",
+  "zip": "rar,zip,7z,xz,gz,dmg,jar",
 };
 
 let mapping:{[key: string]: string} = {};
@@ -30,4 +30,11 @@ const extension = (ext: string) => {
   return "none";
 };
 
-export default extension;
+export function toIcon(item:any):string {
+  if(item.type == 1) {return '/icons/dir.svg';}
+  if(item.type == 2) {
+    let pos = item.name.lastIndexOf('.');
+    if(pos >= 0) { return '/icons/' + extension(item.name.substr(pos+1)) + '.svg'; }
+  }
+  return '/icons/none.svg';
+}
