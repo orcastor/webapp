@@ -4,6 +4,8 @@ import { resolve } from "path";
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
+import Icons from 'unplugin-icons/vite';
+import IconsResolver from 'unplugin-icons/resolver';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -16,18 +18,30 @@ export default defineConfig({
   plugins: [
     vue(),
     AutoImport({
-      resolvers: [ElementPlusResolver()],
-      
+      resolvers: [
+        ElementPlusResolver(),
+        IconsResolver({
+          prefix: 'Icon',
+        }),
+      ],
     }),
     Components({
-      resolvers: [ElementPlusResolver()],
-    })
+      resolvers: [
+        IconsResolver({
+          enabledCollections: ['ep'],
+        }),
+        ElementPlusResolver(),
+      ],
+    }),
+    Icons({
+      autoInstall: true,
+    }),
   ],
   build: {
     outDir: "dist",
-    // minify: "esbuild",
+    minify: "esbuild",
     // esbuild 打包更快，但是不能去除 console.log，terser打包慢，但能去除 console.log
-    minify: "terser",
+    // minify: "terser",
     terserOptions: {
       compress: {
      		drop_console: true,
@@ -43,5 +57,15 @@ export default defineConfig({
         assetFileNames: "assets/[ext]/[name]-[hash].[ext]"
       }
     }*/
+    rollupOptions: {
+      output: {
+        // key自定义 value[] 插件同步package.json名称 或 src/相对路径下的指定文件 （自己可以看manualChunks ts类型）
+        manualChunks: {
+          // vue-router pinia合并打包
+          icons: ['@element-plus/icons-vue'],
+          ext: ['vue-router', 'pinia'],
+        }
+      }
+    }
   }
 })
