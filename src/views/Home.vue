@@ -203,7 +203,9 @@ const loadData = async (b:number, p:number) => {
 };
 
 watch(() => router.currentRoute.value.query, (_newValue, _oldValue) => {
-  init();
+  if (router.currentRoute.value.path == '/') {
+    init();
+  }
 });
 
 const findBktIdx = () => {
@@ -234,17 +236,17 @@ const init = () => {
 
 // 退出登录
 const logout = () => {
-  ElMessageBox.confirm("您是否确认退出登录?", "温馨提示", {
+  ElMessageBox.confirm("您是否确认退出登录?", "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
   }).then(() => {
-    router.push({ name: "login" });
     globalStore.setToken("");
     ElMessage({
       type: "success",
-      message: "退出登录成功！",
+      message: "退出登录成功",
     });
+    router.push({ name: "login", query: router.currentRoute.value.query });
   });
 };
 

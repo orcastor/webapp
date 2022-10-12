@@ -7,6 +7,8 @@ import router from "@/routers/index";
 import pinia from "@/store/index";
 
 import { setCallback } from "@/api/index";
+
+import 'element-plus/es/components/message/style/css';
 import { ElMessage } from 'element-plus';
 setCallback(ElMessage);
 

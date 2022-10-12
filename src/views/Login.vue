@@ -23,7 +23,7 @@ const submitForm = async () => {
       globalStore.setUserInfo(res.data!.user);
       globalStore.setBkts(res.data!.bkts);
       ElMessage({ type: 'success', message: '登录成功' });
-      router.push({ name: "home" });
+      router.push({ name: "home", query: router.currentRoute.value.query });
     } finally {
       loading.value = false;
     }
@@ -31,7 +31,7 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <el-form class='login'>
+  <el-form class='login' v-loading="loading">
     <a href="https://github.com/orcastor/orcas" target="_blank">
       <img src="/logo.svg" class="logo" alt="orcas logo" />
     </a>
