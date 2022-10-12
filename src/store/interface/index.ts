@@ -8,5 +8,4 @@ export interface GlobalState {
 /* MenuState */
 export interface MenuState {
   isCollapse: boolean;
-  breadcrumbs: any[];
 }

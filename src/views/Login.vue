@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue";
-import { useRouter } from "vue-router";
+import router from "@/routers";
 import { Login } from "@/api/interface";
 import { loginApi } from "@/api/modules/login";
 import { GlobalStore } from "@/store";
@@ -13,7 +13,6 @@ const loginForm = reactive<Login.ReqLoginForm>({
 
 const globalStore = GlobalStore();
 const loading = ref(false);
-const router = useRouter();
 
 const submitForm = async () => {
   loading.value = true;
@@ -43,6 +42,12 @@ const submitForm = async () => {
 </template>
 
 <style scoped>
+:root {
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #fff;
+}
+
 .login {
   max-width: 300px;
   margin: auto;

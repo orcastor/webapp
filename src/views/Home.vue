@@ -29,18 +29,34 @@
       <el-header class="header">
         <div class="header-lf flx-center">
           <el-icon class="collapse-icon" @click="menuStore.setCollapse()">
-            <component :is="isCollapse ? 'expand' : 'fold'"></component>
+            <Expand v-if="isCollapse" /><Fold v-else />
           </el-icon>
           <el-icon class="collapse-icon" @click="onRootDir">
             <HomeFilled />
           </el-icon>
-          <Breadcrumb id="breadcrumb" />
+          <el-breadcrumb>
+            <transition-group name="breadcrumb" mode="out-in">
+              <el-breadcrumb-item
+                v-for="item in breadcrumbs as any"
+                :key="item.path"
+                :to="{ path: item.path, query: item.query }"
+              >
+                {{ item.meta.title }}
+              </el-breadcrumb-item>
+            </transition-group>
+          </el-breadcrumb>
         </div>
-        <div class="header-ri flx-center">
-          <!-- User name -->
-          <el-avatar :size="30" src="/avatar.png" />
+        <el-dropdown trigger="click">
+          <div class="header-ri flx-center">
+              <el-avatar :size="30" src="/avatar.png" />
           <span class="username">{{userInfo.name}}</span>
-        </div>
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </el-header>
       <el-main class="main" v-loading="loading">
         <el-empty v-if="!tableData" description="空目录" />
@@ -74,17 +90,24 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { GlobalStore, MenuStore, Cache } from "@/store";
-import { useRouter } from "vue-router";
+import router from "@/routers";
+
+import { GlobalStore, MenuStore } from "@/store";
+import { HomeFilled, Expand, Fold, Box } from '@element-plus/icons-vue'
 import { toIcon } from "@/config/icons";
-import Breadcrumb from "@/views/components/Breadcrumb.vue";
+
+import { Cache } from "@/store/cache";
+
 import { Object } from "@/api/interface";
 import { listApi, getApi } from "@/api/modules/object";
 
-const router = useRouter();
+import 'element-plus/es/components/message-box/style/css';
+import { ElMessage, ElMessageBox } from 'element-plus';
+
 const bktIdx = ref(0);
-const tableData = ref([]);
 const loading = ref(true);
+const tableData = ref([]);
+const breadcrumbs = ref([]);
 
 const globalStore = GlobalStore();
 const userInfo = computed(() => globalStore.userInfo);
@@ -92,7 +115,6 @@ const bkts = computed(() => globalStore.bkts);
 
 const menuStore = MenuStore();
 const isCollapse = computed((): boolean => menuStore.isCollapse);
-const breadcrumbs = computed((): any[] => menuStore.breadcrumbs);
 
 const cache = new Cache(100, null);
 
@@ -114,9 +136,8 @@ const listeningWindow = () => {
   window.onresize = () => {
     return (() => {
       screenWidth.value = document.body.clientWidth;
-      if (isCollapse.value === false && screenWidth.value < 1200)
-        menuStore.setCollapse();
-      if (isCollapse.value === true && screenWidth.value > 1200)
+      if ((isCollapse.value === false && screenWidth.value < 1200)
+        || (isCollapse.value === true && screenWidth.value > 1200))
         menuStore.setCollapse();
     })();
   };
@@ -126,7 +147,7 @@ listeningWindow();
 const onRowClick = (row:any, _column:any, _event:any)=> {
   if (row.type == 1) {
     const query = {b: bkts.value[bktIdx.value].id, p: row.id};
-    breadcrumbs.value.push({ path: '/', query, meta: {title: row.name} });
+    breadcrumbs.value.push({ path: '/', query, meta: {title: row.name} } as never);
     router.push({ name: "home", query });
   }
 };
@@ -138,11 +159,12 @@ const onMenuClick = (item:any) => {
 
 const onRootDir = () => {
   const b = bkts.value[bktIdx.value].id;
-  menuStore.setBreadcrumbs([]);
+  breadcrumbs.value = [];
   router.push({ name: "home", query: { b } });
 };
 
 const loadData = async (b:number, p:number) => {
+  loading.value = true;
   try {
     const o:Object.ListOption = { c: 1000, b: 1 };
     const req:Object.ReqList = { b, p, o };
@@ -157,26 +179,27 @@ const loadData = async (b:number, p:number) => {
       }
     }
   } finally {
+    loading.value = false;
   }
 
-  let pp = p;
+  let i = p;
   let bc:any[] = [];
-  while(pp) {
+  while(i) {
     try {
-      let cached = cache.get(b+'-'+pp);
+      let cached = cache.get(b+'-'+i);
       if (!cached) {
-        let req:Object.ReqGet = { b, i: pp };
+        let req:Object.ReqGet = { b, i };
         const res = await getApi(req);
         cached = res.data!.o;
         if (!cached) break;
-        cache.put(b+'-'+pp, cached);
+        cache.put(b+'-'+i, cached);
       }
-      pp = cached.pid || 0;
+      i = cached.pid || 0;
       bc.unshift({ path: '/', query: { b, p: cached.id }, meta: {title: cached.name}});
     } finally {
     }
   }
-  menuStore.setBreadcrumbs(bc);
+  breadcrumbs.value = bc as never[];
 };
 
 watch(() => router.currentRoute.value.query, (_newValue, _oldValue) => {
@@ -198,7 +221,6 @@ const findBktIdx = () => {
 
 onMounted(() => {
   init();
-  loading.value = false;
 });
 
 const init = () => {
@@ -208,6 +230,22 @@ const init = () => {
     const b = bkts.value[bktIdx.value].id as number;
     loadData(b, p);
   }
+};
+
+// 退出登录
+const logout = () => {
+  ElMessageBox.confirm("您是否确认退出登录?", "温馨提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  }).then(() => {
+    router.push({ name: "login" });
+    globalStore.setToken("");
+    ElMessage({
+      type: "success",
+      message: "退出登录成功！",
+    });
+  });
 };
 
 </script>
@@ -239,6 +277,7 @@ const init = () => {
   }
   .header-ri {
     margin: 0 20px;
+    cursor: pointer;
     .header-icon {
       display: flex;
       align-items: center;
