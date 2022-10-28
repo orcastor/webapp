@@ -1,2 +1,2 @@
-// * 后端微服务端口名
-export const PORT1 = "//localhost/api";
+// * 后端微服务路径配置
+export const API = "/api";
