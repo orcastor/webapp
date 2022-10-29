@@ -32,7 +32,7 @@ const submitForm = async () => {
 
 <template>
   <el-form class='login' v-loading="loading">
-    <a href="https://github.com/orcastor/orcas" target="_blank">
+    <a href="https://github.com/orcastor" target="_blank">
       <img src="/logo.svg" class="logo" alt="orcas logo" />
     </a>
     <input placeholder="输入用户名" v-model="loginForm.username">

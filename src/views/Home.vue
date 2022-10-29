@@ -5,7 +5,7 @@
       :width="isCollapse ? '64px' : '200px'"
     >
       <div class="logo flx-center">
-        <a href="https://github.com/orcastor/orcas" target="_blank">
+        <a href="https://github.com/orcastor" target="_blank">
           <img src="/logo.svg" alt="logo" />
         </a>
         <span v-show="!isCollapse"></span>
