@@ -20,7 +20,7 @@
         <el-menu-item v-for="(b, i) in bkts" :index="i" @click="onMenuClick">
           <el-icon><Box /></el-icon>
           <template #title>
-            <span>{{ b.name }}</span>
+            <span>{{ b.n }}</span>
           </template>
         </el-menu-item>
       </el-menu>
