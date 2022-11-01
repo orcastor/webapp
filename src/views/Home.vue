@@ -72,9 +72,9 @@
           </el-table-column>
           <el-table-column label="文件名" min-width="180" show-overflow-tooltip>
             <template #default="scope">
-              <div><strong>{{ scope.row.name }}</strong></div>
-              <span>{{ new Date(scope.row.mtime*1000).toLocaleString() }}</span>
-              <!-- new Date((scope.row.id/Math.pow(2,22)+1662688799)*1000).toLocaleString() -->
+              <div><strong>{{ scope.row.n }}</strong></div>
+              <span>{{ new Date(scope.row.m*1000).toLocaleString() }}</span>
+              <!-- new Date((scope.row.i/Math.pow(2,22)+1662688799)*1000).toLocaleString() -->
             </template>
           </el-table-column>
           <el-table-column label="大小" width="120">
@@ -119,7 +119,7 @@ const isCollapse = computed((): boolean => menuStore.isCollapse);
 const cache = new Cache(100, null);
 
 function toSize(scope:any):string {
-  if (scope.row.type == 2) {
+  if (scope.row.t == 2) {
     const sz = scope.row.size||0;
     if (sz < 1e3) { return sz + '  B'; }
     if (sz < 1e6) { return (sz/1e3).toFixed(2) + ' KB'; }
@@ -145,9 +145,9 @@ const listeningWindow = () => {
 listeningWindow();
 
 const onRowClick = (row:any, _column:any, _event:any)=> {
-  if (row.type == 1) {
-    const query = {b: bkts.value[bktIdx.value].id, p: row.id};
-    breadcrumbs.value.push({ path: '/', query, meta: {title: row.name} } as never);
+  if (row.t == 1) {
+    const query = {b: bkts.value[bktIdx.value].i, p: row.i};
+    breadcrumbs.value.push({ path: '/', query, meta: {title: row.n} } as never);
     router.push({ name: "home", query });
   }
 };
@@ -158,7 +158,7 @@ const onMenuClick = (item:any) => {
 };
 
 const onRootDir = () => {
-  const b = bkts.value[bktIdx.value].id;
+  const b = bkts.value[bktIdx.value].i;
   breadcrumbs.value = [];
   router.push({ name: "home", query: { b } });
 };
@@ -175,7 +175,7 @@ const loadData = async (b:number, p:number) => {
       for (let i = 0; i < tableData.value.length; i++) {
         const f = tableData.value[i] as any;
         // 只要目录
-        if (f.type == 1) cache.put(b+'-'+f.id, f);
+        if (f.t == 1) cache.put(b+'-'+f.i, f);
       }
     }
   } finally {
@@ -194,8 +194,8 @@ const loadData = async (b:number, p:number) => {
         if (!cached) break;
         cache.put(b+'-'+i, cached);
       }
-      i = cached.pid || 0;
-      bc.unshift({ path: '/', query: { b, p: cached.id }, meta: {title: cached.name}});
+      i = cached.p || 0;
+      bc.unshift({ path: '/', query: { b, p: cached.i }, meta: {title: cached.n}});
     } finally {
     }
   }
@@ -212,7 +212,7 @@ const findBktIdx = () => {
   const b = router.currentRoute.value.query.b;
   if (b) {
     for (let i = 0; i < bkts.value.length; i++) {
-      if (bkts.value[i].id == b) {
+      if (bkts.value[i].i == b) {
         bktIdx.value = i;
         return;
       }
@@ -229,7 +229,7 @@ const init = () => {
   findBktIdx();
   const p = parseInt(router.currentRoute.value.query.p+'');
   if (bkts.value.length > 0) {
-    const b = bkts.value[bktIdx.value].id as number;
+    const b = bkts.value[bktIdx.value].i as number;
     loadData(b, p);
   }
 };

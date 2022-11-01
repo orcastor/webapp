@@ -7,8 +7,8 @@ import { GlobalStore } from "@/store";
 import { ElMessage } from 'element-plus'
 // 登录表单数据
 const loginForm = reactive<Login.ReqLoginForm>({
-  username: "",
-  password: "",
+  u: "",
+  p: "",
 });
 
 const globalStore = GlobalStore();
@@ -20,8 +20,8 @@ const submitForm = async () => {
       const res = await loginApi(loginForm);
       // 存储 token
       globalStore.setToken(res.data!.access_token);
-      globalStore.setUserInfo(res.data!.user);
-      globalStore.setBkts(res.data!.bkts);
+      globalStore.setUserInfo(res.data!.u);
+      globalStore.setBkts(res.data!.b);
       ElMessage({ type: 'success', message: '登录成功' });
       router.push({ name: "home", query: router.currentRoute.value.query });
     } finally {
@@ -35,8 +35,8 @@ const submitForm = async () => {
     <a href="https://github.com/orcastor" target="_blank">
       <img src="/logo.svg" class="logo" alt="orcas logo" />
     </a>
-    <input placeholder="输入用户名" v-model="loginForm.username">
-    <input type="password" placeholder="输入密码" v-model="loginForm.password">
+    <input placeholder="输入用户名" v-model="loginForm.u">
+    <input type="password" placeholder="输入密码" v-model="loginForm.p">
     <button type="submit" @click="submitForm()">登录</button>
   </el-form>
 </template>

@@ -12,13 +12,13 @@ export interface ResultData<T = any> extends Result {
 // * 登录模块
 export namespace Login {
   export interface ReqLoginForm {
-    username: string;
-    password: string;
+    u: string; // username
+    p: string; // password
   }
   export interface ResLogin {
     access_token: string;
-    user: any;
-    bkts: any;
+    u: any; // user
+    b: any; // bkts
   }
 }
 
@@ -37,14 +37,14 @@ export namespace Object {
     o: ListOption;
   }
   export interface ObjectInfo {
-    id: number;
-    pid: number;
-    mtime: number;
-    did: number;
-    type: number;
-    name: string;
-    size: number;
-    ext: any;
+    i: number; // id
+    p: number; // pid
+    m: number; // mtime
+    d: number; // did
+    t: number; // type
+    n: string; // name
+    s: number; //size
+    e: any; // ext
   }
   export interface ResList {
     o?: ObjectInfo[];
