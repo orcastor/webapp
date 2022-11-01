@@ -49,7 +49,7 @@
         <el-dropdown trigger="click">
           <div class="header-ri flx-center">
               <el-avatar :size="30" src="/avatar.png" />
-          <span class="username">{{userInfo.name}}</span>
+          <span class="username">{{userInfo.n}}</span>
           </div>
           <template #dropdown>
             <el-dropdown-menu>
