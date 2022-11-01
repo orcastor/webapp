@@ -120,7 +120,7 @@ const cache = new Cache(100, null);
 
 function toSize(scope:any):string {
   if (scope.row.t == 2) {
-    const sz = scope.row.size||0;
+    const sz = scope.row.s||0;
     if (sz < 1e3) { return sz + '  B'; }
     if (sz < 1e6) { return (sz/1e3).toFixed(2) + ' KB'; }
     if (sz < 1e9) { return (sz/1e6).toFixed(2) + ' MB'; }
