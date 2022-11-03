@@ -2,9 +2,20 @@ localhost {
 	root * ./dist
 	file_server
 	encode gzip
-	reverse_proxy /api/* 127.0.0.1:7983
-}
 
-:7983 {
-	reverse_proxy :7982
+	reverse_proxy /api/*        localhost:7982
+	reverse_proxy /admin/api/*  localhost:7983
+	reverse_proxy /prvw/api/*   localhost:7984
+	reverse_proxy /bak/api/*    localhost:7985
+	reverse_proxy /repl/api/*   localhost:7986
+	reverse_proxy /disk/api/*   localhost:7987
+	reverse_proxy /finder/api/* localhost:7988
+	reverse_proxy /tm/api/*     localhost:7989
+
+	reverse_proxy /foto/api/*   localhost:7990
+	reverse_proxy /dnld/api/*   localhost:7991
+	reverse_proxy /mc/api/*     localhost:7992
+	reverse_proxy /prj/api/*    localhost:7993
+	reverse_proxy /wand/api/*   localhost:7994
+	reverse_proxy /clnr/api/*   localhost:7995
 }
