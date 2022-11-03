@@ -6,7 +6,7 @@ import axios, {
 } from "axios";
 import { ResultData } from "@/api/interface";
 import { GlobalStore } from "@/store";
-// import router from "@/routers";
+import router from "@/routers";
 
 var callback:({}) => void = ((_o) => {});
 
@@ -145,9 +145,9 @@ class RequestHttp {
         if (data.code == ResultEnum.OVERDUE) {
           callback({ type: 'warning', message: data.msg });
           globalStore.setToken("");
-          /*router.replace({
+          router.replace({
             path: "/login",
-          });*/
+          });
           return Promise.reject(data);
         }
         // * 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）
