@@ -1,5 +1,5 @@
 const types:{[key: string]: string} = {
-  "audio": "mp3,wav,ape",
+  "audio": "mp3,wma,wav,ape,flac,ogg,aac,lrc",
   "doc": "doc,docx,doct,wps,pages",
   "link": "lnk",
   "pdf": "pdf",
