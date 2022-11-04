@@ -175,7 +175,7 @@ const loadData = async (b:number, p:number) => {
       for (let i = 0; i < tableData.value.length; i++) {
         const f = tableData.value[i] as any;
         // 只要目录
-        if (f.t == 1) cache.put(b+'-'+f.i, f);
+        if (f.t == 1) cache.put(b+'-'+f.i, {...f, p: p} );
       }
     }
   } finally {
