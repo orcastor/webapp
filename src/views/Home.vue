@@ -32,7 +32,7 @@
             <Expand v-if="isCollapse" /><Fold v-else />
           </el-icon>
           <el-icon v-if="previewing" class="collapse-icon" @click="previewing = false">
-            <ArrowLeft />
+            <Back />
           </el-icon>
           <el-icon v-else class="collapse-icon" @click="onRootDir">
             <HomeFilled />
@@ -99,7 +99,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import router from "@/routers";
 
 import { GlobalStore, MenuStore } from "@/store";
-import { ArrowLeft, HomeFilled, Expand, Fold, Box } from '@element-plus/icons-vue'
+import { Back, HomeFilled, Expand, Fold, Box } from '@element-plus/icons-vue'
 import { toIcon } from "@/config/icons";
 
 import { Cache } from "@/store/cache";
