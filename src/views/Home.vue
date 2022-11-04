@@ -31,10 +31,14 @@
           <el-icon class="collapse-icon" @click="menuStore.setCollapse()">
             <Expand v-if="isCollapse" /><Fold v-else />
           </el-icon>
-          <el-icon class="collapse-icon" @click="onRootDir">
+          <el-icon v-if="previewing" class="collapse-icon" @click="previewing = false">
+            <ArrowLeft />
+          </el-icon>
+          <el-icon v-else class="collapse-icon" @click="onRootDir">
             <HomeFilled />
           </el-icon>
-          <el-breadcrumb>
+          <span v-if="previewing" >{{preview_title}}</span>
+          <el-breadcrumb v-else >
             <transition-group name="breadcrumb" mode="out-in">
               <el-breadcrumb-item
                 v-for="item in breadcrumbs as any"
@@ -59,7 +63,8 @@
         </el-dropdown>
       </el-header>
       <el-main class="main" v-loading="loading">
-        <el-empty v-if="!tableData" description="空目录" />
+        <vue-pdf-embed v-if="previewing" :source="preview_link" />
+        <el-empty v-else-if="!tableData" description="空目录" />
         <el-table v-else
         :data="tableData"
         style="width: 100%;"
@@ -89,11 +94,12 @@
 </template>
 
 <script setup lang="ts">
+import VuePdfEmbed from 'vue-pdf-embed';
 import { ref, computed, watch, onMounted } from 'vue';
 import router from "@/routers";
 
 import { GlobalStore, MenuStore } from "@/store";
-import { HomeFilled, Expand, Fold, Box } from '@element-plus/icons-vue'
+import { ArrowLeft, HomeFilled, Expand, Fold, Box } from '@element-plus/icons-vue'
 import { toIcon } from "@/config/icons";
 
 import { Cache } from "@/store/cache";
@@ -108,6 +114,9 @@ const bktIdx = ref(0);
 const loading = ref(true);
 const tableData = ref([]);
 const breadcrumbs = ref([]);
+const previewing = ref(false);
+const preview_title = ref('');
+const preview_link = ref('');
 
 const globalStore = GlobalStore();
 const userInfo = computed(() => globalStore.userInfo);
@@ -149,6 +158,10 @@ const onRowClick = (row:any, _column:any, _event:any) => {
     const query = {b: bkts.value[bktIdx.value].i, p: row.i};
     breadcrumbs.value.push({ path: '/', query, meta: {title: row.n} } as never);
     router.push({ name: "home", query });
+  } else {
+    previewing.value = true;
+    preview_title.value = row.n;
+    preview_link.value = '//raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
   }
 };
 
@@ -164,6 +177,7 @@ const onRootDir = () => {
 };
 
 const loadData = async (b:number, p:number) => {
+  previewing.value = false;
   loading.value = true;
   try {
     const o:Object.ListOption = { c: 1000, b: 1 };

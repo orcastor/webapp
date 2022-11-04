@@ -64,6 +64,7 @@ export default defineConfig({
           // vue-router pinia合并打包
           icons: ['@element-plus/icons-vue'],
           ext: ['vue-router', 'pinia'],
+          pdf: ['vue-pdf-embed'],
         }
       }
     }
