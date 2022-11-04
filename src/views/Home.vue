@@ -70,14 +70,14 @@
               <el-image :src=toIcon(scope.row) style="width: 32px;"/>
             </template>
           </el-table-column>
-          <el-table-column label="文件名" min-width="180" show-overflow-tooltip>
+          <el-table-column label="文件名" min-width="180" show-overflow-tooltip sortable prop="n">
             <template #default="scope">
               <div><strong>{{ scope.row.n }}</strong></div>
               <span>{{ new Date(scope.row.m*1000).toLocaleString() }}</span>
               <!-- new Date((scope.row.i/Math.pow(2,22)+1662688799)*1000).toLocaleString() -->
             </template>
           </el-table-column>
-          <el-table-column label="大小" width="120">
+          <el-table-column label="大小" width="120" sortable prop="s">
             <template #default="scope">
               {{ toSize(scope) }}
             </template>
@@ -144,7 +144,7 @@ const listeningWindow = () => {
 };
 listeningWindow();
 
-const onRowClick = (row:any, _column:any, _event:any)=> {
+const onRowClick = (row:any, _column:any, _event:any) => {
   if (row.t == 1) {
     const query = {b: bkts.value[bktIdx.value].i, p: row.i};
     breadcrumbs.value.push({ path: '/', query, meta: {title: row.n} } as never);
