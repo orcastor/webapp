@@ -61,10 +61,8 @@ export default defineConfig({
       output: {
         // key自定义 value[] 插件同步package.json名称 或 src/相对路径下的指定文件 （自己可以看manualChunks ts类型）
         manualChunks: {
-          // vue-router pinia合并打包
           icons: ['@element-plus/icons-vue'],
-          ext: ['vue-router', 'pinia'],
-          pdf: ['vue-pdf-embed'],
+          ext: ['vue-router'],
         }
       }
     }

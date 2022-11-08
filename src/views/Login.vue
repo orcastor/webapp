@@ -3,7 +3,7 @@ import { ref, reactive } from "vue";
 import router from "@/routers";
 import { Login } from "@/api/interface";
 import { loginApi } from "@/api/modules/login";
-import { GlobalStore } from "@/store";
+import { store } from "@/store";
 import { ElMessage } from 'element-plus'
 // 登录表单数据
 const loginForm = reactive<Login.ReqLoginForm>({
@@ -11,7 +11,6 @@ const loginForm = reactive<Login.ReqLoginForm>({
   p: "",
 });
 
-const globalStore = GlobalStore();
 const loading = ref(false);
 
 const submitForm = async () => {
@@ -19,9 +18,9 @@ const submitForm = async () => {
   try {
       const res = await loginApi(loginForm);
       // 存储 token
-      globalStore.setToken(res.data!.access_token);
-      globalStore.setUserInfo(res.data!.u);
-      globalStore.setBkts(res.data!.b);
+      store.setToken(res.data!.access_token);
+      store.setUserInfo(res.data!.u);
+      store.setBkts(res.data!.b);
       ElMessage({ type: 'success', message: '登录成功' });
       router.push({ name: "home", query: router.currentRoute.value.query });
     } finally {

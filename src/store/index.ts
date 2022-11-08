@@ -1,57 +1,39 @@
-import { defineStore, createPinia } from "pinia";
-import { GlobalState, MenuState } from "./interface";
-import piniaPersistConfig from "@/config/piniaPersist";
-import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
+class GlobalStore {
+  // token
+  token: string;
+  // userInfo
+  userInfo: any;
+  // buckets
+  bkts: any;
+  // is menu collapsed
+  isCollapse: boolean;
 
-// defineStore 调用后返回一个函数，调用该函数获得 Store 实体
-export const GlobalStore = defineStore({
-  // id: 必须的，在所有 Store 中唯一
-  id: "GlobalState",
-  // state: 返回对象的函数
-  state: (): GlobalState => ({
-    // token
-    token: "",
-    // userInfo
-    userInfo: "",
-    // buckets
-    bkts: "",
-  }),
-  getters: {},
-  actions: {
-    // setToken
-    setToken(token: string) {
-      this.token = token;
-    },
-    // setUserInfo
-    setUserInfo(userInfo: any) {
-      this.userInfo = userInfo;
-    },
-    // setBkts
-    setBkts(bkts: any) {
-      this.bkts = bkts;
-    },
-  },
-  persist: piniaPersistConfig("GlobalState"),
-});
+  constructor() {
+    this.token = localStorage.getItem('token')||'';
+    this.userInfo = JSON.parse(localStorage.getItem('userInfo')||'{}');
+    this.bkts = JSON.parse(localStorage.getItem('bkts')||'{}');
+    this.isCollapse = JSON.parse(localStorage.getItem('isCollapse')||'false');
+  }
 
-// MenuStore
-export const MenuStore = defineStore({
-  id: "MenuState",
-  state: (): MenuState => ({
-    // menu collapse
-    isCollapse: false,
-  }),
-  getters: {},
-  actions: {
-    async setCollapse() {
-      this.isCollapse = !this.isCollapse;
-    },
-  },
-  persist: piniaPersistConfig("MenuState"),
-});
+  // setToken
+  setToken(token: string) {
+    this.token = token;
+    localStorage.setItem('token', token);
+  }
+  // setUserInfo
+  setUserInfo(userInfo: any) {
+    this.userInfo = userInfo;
+    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+  }
+  // setBkts
+  setBkts(bkts: any) {
+    this.bkts = bkts;
+    localStorage.setItem('bkts', JSON.stringify(bkts));
+  }
+  async setCollapse() {
+    this.isCollapse = !this.isCollapse;
+    localStorage.setItem('isCollapse', JSON.stringify(this.isCollapse));
+  }
+};
 
-// piniaPersist(持久化)
-const pinia = createPinia();
-pinia.use(piniaPluginPersistedstate);
-
-export default pinia;
+export const store:GlobalStore = new GlobalStore;

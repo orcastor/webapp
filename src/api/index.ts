@@ -5,7 +5,7 @@ import axios, {
   AxiosResponse,
 } from "axios";
 import { ResultData } from "@/api/interface";
-import { GlobalStore } from "@/store";
+import { store } from "@/store";
 import router from "@/routers";
 
 var callback:({}) => void = ((_o) => {});
@@ -121,8 +121,7 @@ class RequestHttp {
      */
     this.service.interceptors.request.use(
       (config: AxiosRequestConfig) => {
-        const globalStore = GlobalStore();
-        const token: string = globalStore.token;
+        const token: string = store.token;
         return {
           ...config,
           headers: { ...config.headers, "Authorization": token },
@@ -139,12 +138,11 @@ class RequestHttp {
      */
     this.service.interceptors.response.use(
       (response: AxiosResponse) => {
-        const { data, config } = response;
-        const globalStore = GlobalStore();
+        const { data } = response;
         // * 登陆失效（code == 599）
         if (data.code == ResultEnum.OVERDUE) {
           callback({ type: 'warning', message: data.msg });
-          globalStore.setToken("");
+          store.setToken("");
           router.replace({
             path: "/login",
           });

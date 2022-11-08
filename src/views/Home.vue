@@ -28,7 +28,7 @@
     <el-container>
       <el-header class="header">
         <div class="header-lf flx-center">
-          <el-icon class="collapse-icon" @click="menuStore.setCollapse()">
+          <el-icon class="collapse-icon" @click="store.setCollapse()">
             <Expand v-if="isCollapse" /><Fold v-else />
           </el-icon>
           <el-icon v-if="previewing" class="collapse-icon" @click="previewing = false">
@@ -63,7 +63,7 @@
         </el-dropdown>
       </el-header>
       <el-main class="main" v-loading="loading">
-        <vue-pdf-embed v-if="previewing" :source="preview_link" />
+        <iframe v-if="previewing" :src="preview_link" style="width:100%; height: 100vh;" :onload="loading = false" frameborder="0"/>
         <el-empty v-else-if="!tableData" description="空目录" />
         <el-table v-else
         :data="tableData"
@@ -94,11 +94,10 @@
 </template>
 
 <script setup lang="ts">
-import VuePdfEmbed from 'vue-pdf-embed';
 import { ref, computed, watch, onMounted } from 'vue';
 import router from "@/routers";
 
-import { GlobalStore, MenuStore } from "@/store";
+import { store } from "@/store";
 import { Back, HomeFilled, Expand, Fold, Box } from '@element-plus/icons-vue'
 import { toIcon } from "@/config/icons";
 
@@ -118,12 +117,10 @@ const previewing = ref(false);
 const preview_title = ref('');
 const preview_link = ref('');
 
-const globalStore = GlobalStore();
-const userInfo = computed(() => globalStore.userInfo);
-const bkts = computed(() => globalStore.bkts);
+const userInfo = computed(() => store.userInfo);
+const bkts = computed(() => store.bkts);
 
-const menuStore = MenuStore();
-const isCollapse = computed((): boolean => menuStore.isCollapse);
+const isCollapse = computed((): boolean => store.isCollapse);
 
 const cache = new Cache(100, null);
 
@@ -147,7 +144,7 @@ const listeningWindow = () => {
       screenWidth.value = document.body.clientWidth;
       if ((isCollapse.value === false && screenWidth.value < 1200)
         || (isCollapse.value === true && screenWidth.value > 1200))
-        menuStore.setCollapse();
+        store.setCollapse();
     })();
   };
 };
@@ -155,13 +152,19 @@ listeningWindow();
 
 const onRowClick = (row:any, _column:any, _event:any) => {
   if (row.t == 1) {
-    const query = {b: bkts.value[bktIdx.value].i, p: row.i};
+    const query = {b: bkts.value[bktIdx.value].i, i: row.i};
     breadcrumbs.value.push({ path: '/', query, meta: {title: row.n} } as never);
     router.push({ name: "home", query });
   } else {
     previewing.value = true;
     preview_title.value = row.n;
-    preview_link.value = '//raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
+    loading.value = true;
+
+    let type = row.n;
+    let pos = type.lastIndexOf('.');
+    if (pos >= 0) { type = type.substr(pos+1).toLowerCase(); }
+
+    preview_link.value = '//'+location.host+'/prvw/?b='+bkts.value[bktIdx.value].i+'&v='+row.i+'&t='+type;
   }
 };
 
@@ -209,7 +212,7 @@ const loadData = async (b:number, p:number) => {
         cache.put(b+'-'+i, cached);
       }
       i = cached.p || 0;
-      bc.unshift({ path: '/', query: { b, p: cached.i }, meta: {title: cached.n}});
+      bc.unshift({ path: '/', query: { b, i: cached.i }, meta: {title: cached.n}});
     } finally {
     }
   }
@@ -241,10 +244,10 @@ onMounted(() => {
 
 const init = () => {
   findBktIdx();
-  const p = parseInt(router.currentRoute.value.query.p+'');
+  const i = parseInt(router.currentRoute.value.query.i+'');
   if (bkts.value.length > 0) {
     const b = bkts.value[bktIdx.value].i as number;
-    loadData(b, p);
+    loadData(b, i);
   }
 };
 
@@ -255,7 +258,7 @@ const logout = () => {
     cancelButtonText: "取消",
     type: "warning",
   }).then(() => {
-    globalStore.setToken("");
+    store.setToken("");
     ElMessage({
       type: "success",
       message: "退出登录成功",
