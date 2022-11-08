@@ -62,13 +62,20 @@
           </template>
         </el-dropdown>
       </el-header>
-      <el-main class="main" v-loading="loading">
-        <iframe v-if="previewing" :src="preview_link" style="width:100%; height: 100vh;" :onload="loading = false" frameborder="0"/>
+      <el-main class="main">
+        <iframe v-if="previewing"
+          v-loading="loading" 
+          :src="preview_link"
+          style="width:100%; height:100vh;"
+          :onload="loading = false"
+          frameborder="0"
+        />
         <el-empty v-else-if="!tableData" description="空目录" />
         <el-table v-else
-        :data="tableData"
-        style="width: 100%;"
-        @row-click="onRowClick"
+          :data="tableData"
+          style="width: 100%;"
+          @row-click="onRowClick"
+          v-loading="loading"
         >
           <el-table-column width="56">
             <template #default="scope">
@@ -156,9 +163,9 @@ const onRowClick = (row:any, _column:any, _event:any) => {
     breadcrumbs.value.push({ path: '/', query, meta: {title: row.n} } as never);
     router.push({ name: "home", query });
   } else {
+    loading.value = true;
     previewing.value = true;
     preview_title.value = row.n;
-    loading.value = true;
 
     let type = row.n;
     let pos = type.lastIndexOf('.');
