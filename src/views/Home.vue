@@ -28,7 +28,7 @@
     <el-container>
       <el-header class="header">
         <div class="header-lf flx-center">
-          <el-icon class="collapse-icon" @click="store.setCollapse()">
+          <el-icon class="collapse-icon" @click="setCollapse">
             <Expand v-if="isCollapse" /><Fold v-else />
           </el-icon>
           <el-icon v-if="previewing" class="collapse-icon" @click="previewing = false">
@@ -126,8 +126,7 @@ const preview_link = ref('');
 
 const userInfo = computed(() => store.userInfo);
 const bkts = computed(() => store.bkts);
-
-const isCollapse = computed((): boolean => store.isCollapse);
+const isCollapse = ref(store.isCollapse);
 
 const cache = new Cache(100, null);
 
@@ -151,7 +150,7 @@ const listeningWindow = () => {
       screenWidth.value = document.body.clientWidth;
       if ((isCollapse.value === false && screenWidth.value < 1200)
         || (isCollapse.value === true && screenWidth.value > 1200))
-        store.setCollapse();
+        setCollapse();
     })();
   };
 };
@@ -178,6 +177,11 @@ const onRowClick = (row:any, _column:any, _event:any) => {
 const onMenuClick = (item:any) => {
   bktIdx.value = item.index;
   onRootDir();
+};
+
+const setCollapse = () => {
+  isCollapse.value = !isCollapse.value;
+  store.setCollapse();
 };
 
 const onRootDir = () => {
