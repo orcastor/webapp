@@ -115,7 +115,6 @@ import { listApi, getApi } from "@/api/modules/object";
 
 import 'element-plus/es/components/message-box/style/css';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { fa } from 'element-plus/es/locale';
 
 const bktIdx = ref(0);
 const loading = ref(true);
@@ -183,10 +182,20 @@ const onRootDir = () => {
   router.push({ name: "home", query: { b } });
 };
 
-const loadData = async (b:number, p:number, v:number) => {
-  loading.value = true;
-  if (v) previewing.value = true;
+const get = async(b:number, i:number):Promise<any> => {
+  let cached = cache.get(b+'-'+i);
+  if (!cached) {
+    let req:Object.ReqGet = { b, i };
+    const res = await getApi(req);
+    cached = res.data!.o;
+    if (!cached) return;
+    cache.put(b+'-'+i, cached);
+  }
+  return cached;
+}
 
+const loadData = async (b:number, p:number) => {
+  loading.value = true;
   try {
     const o:Object.ListOption = { c: 1000, b: 1 };
     const req:Object.ReqList = { b, p, o };
@@ -198,8 +207,6 @@ const loadData = async (b:number, p:number, v:number) => {
         const f = tableData.value[i] as any;
         // 只要目录
         if (f.t == 1) cache.put(b+'-'+f.i, {...f, p: p} );
-        // 预览
-        if (f.i == v) preview(v);
       }
     }
   } finally {
@@ -210,16 +217,9 @@ const loadData = async (b:number, p:number, v:number) => {
   let bc:any[] = [];
   while(i) {
     try {
-      let cached = cache.get(b+'-'+i);
-      if (!cached) {
-        let req:Object.ReqGet = { b, i };
-        const res = await getApi(req);
-        cached = res.data!.o;
-        if (!cached) break;
-        cache.put(b+'-'+i, cached);
-      }
-      i = cached.p || 0;
-      bc.unshift({ path: '/', query: { b, i: cached.i }, meta: {title: cached.n}});
+      const obj = await get(b, i);
+      i = obj.p || 0;
+      bc.unshift({ path: '/', query: { b, i: obj.i }, meta: {title: obj.n}});
     } finally {
     }
   }
@@ -253,9 +253,11 @@ const init = () => {
   findBktIdx();
   let query = router.currentRoute.value.query;
   const i = parseInt(query.i+'');
+  const v = parseInt(query.v+'');
   if (bkts.value.length > 0) {
     const b = bkts.value[bktIdx.value].i as number;
-    loadData(b, i, parseInt(query.v + ''));
+    if (v) preview(b, v);
+    else loadData(b, i);
   }
 };
 
@@ -275,24 +277,18 @@ const logout = () => {
   });
 };
 
-const preview = (v:number)=> {
+const preview = async (b:number, v:number)=> {
   if (!v) return;
 
   previewing.value = true;
 
-  let name = '';
-  for (let i = 0; i < tableData.value.length; i++) {
-    const f = tableData.value[i] as any;
-    if (f.i == v) {
-      name = f.n;
-    } 
-  }
-
-  if (!name) {
+  const obj = await get(b, v);
+  if (!obj) {
     previewing.value = false;
     return;
   }
 
+  let name = obj.n;
   preview_title.value = name;
 
   let pos = name.lastIndexOf('.');
