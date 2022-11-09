@@ -66,7 +66,7 @@
         <iframe v-if="previewing"
           v-loading="loading" 
           :src="preview_link"
-          style="width:100%; height:100vh;"
+          style="width:100%; height:85vh;"
           :onload="loading = false"
           frameborder="0"
         />
@@ -307,7 +307,6 @@ const exitPreview = () => {
 
 <style scoped lang="scss">
 .main {
-  min-height: 100vh;
   overflow: auto;
   :deep(tr.el-table__row) {
     cursor: pointer;
