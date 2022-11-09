@@ -307,6 +307,7 @@ const exitPreview = () => {
 
 <style scoped lang="scss">
 .main {
+  min-height: 100vh;
   overflow: auto;
   :deep(tr.el-table__row) {
     cursor: pointer;
