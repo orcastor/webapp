@@ -31,7 +31,7 @@
           <el-icon class="collapse-icon" @click="setCollapse">
             <Expand v-if="isCollapse" /><Fold v-else />
           </el-icon>
-          <el-icon v-if="previewing" class="collapse-icon" @click="previewing = false">
+          <el-icon v-if="previewing" class="collapse-icon" @click="exitPreview">
             <Back />
           </el-icon>
           <el-icon v-else class="collapse-icon" @click="onRootDir">
@@ -115,6 +115,7 @@ import { listApi, getApi } from "@/api/modules/object";
 
 import 'element-plus/es/components/message-box/style/css';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { fa } from 'element-plus/es/locale';
 
 const bktIdx = ref(0);
 const loading = ref(true);
@@ -162,15 +163,7 @@ const onRowClick = (row:any, _column:any, _event:any) => {
     breadcrumbs.value.push({ path: '/', query, meta: {title: row.n} } as never);
     router.push({ name: "home", query });
   } else {
-    loading.value = true;
-    previewing.value = true;
-    preview_title.value = row.n;
-
-    let type = row.n;
-    let pos = type.lastIndexOf('.');
-    if (pos >= 0) { type = type.substr(pos+1).toLowerCase(); }
-
-    preview_link.value = '//'+location.host+'/prvw/?b='+bkts.value[bktIdx.value].i+'&v='+row.i+'&t='+type;
+    router.push({ name: "home", query: { ...router.currentRoute.value.query, v: row.i } });
   }
 };
 
@@ -190,9 +183,10 @@ const onRootDir = () => {
   router.push({ name: "home", query: { b } });
 };
 
-const loadData = async (b:number, p:number) => {
-  previewing.value = false;
+const loadData = async (b:number, p:number, v:number) => {
   loading.value = true;
+  if (v) previewing.value = true;
+
   try {
     const o:Object.ListOption = { c: 1000, b: 1 };
     const req:Object.ReqList = { b, p, o };
@@ -204,6 +198,8 @@ const loadData = async (b:number, p:number) => {
         const f = tableData.value[i] as any;
         // 只要目录
         if (f.t == 1) cache.put(b+'-'+f.i, {...f, p: p} );
+        // 预览
+        if (f.i == v) preview(v);
       }
     }
   } finally {
@@ -230,7 +226,7 @@ const loadData = async (b:number, p:number) => {
   breadcrumbs.value = bc as never[];
 };
 
-watch(() => router.currentRoute.value.query, (_newValue, _oldValue) => {
+watch(() => router.currentRoute.value.query, (_newValue:any, _oldValue:any) => {
   if (router.currentRoute.value.path == '/') {
     init();
   }
@@ -255,10 +251,11 @@ onMounted(() => {
 
 const init = () => {
   findBktIdx();
-  const i = parseInt(router.currentRoute.value.query.i+'');
+  let query = router.currentRoute.value.query;
+  const i = parseInt(query.i+'');
   if (bkts.value.length > 0) {
     const b = bkts.value[bktIdx.value].i as number;
-    loadData(b, i);
+    loadData(b, i, parseInt(query.v + ''));
   }
 };
 
@@ -276,6 +273,38 @@ const logout = () => {
     });
     router.push({ name: "login", query: router.currentRoute.value.query });
   });
+};
+
+const preview = (v:number)=> {
+  if (!v) return;
+
+  previewing.value = true;
+
+  let name = '';
+  for (let i = 0; i < tableData.value.length; i++) {
+    const f = tableData.value[i] as any;
+    if (f.i == v) {
+      name = f.n;
+    } 
+  }
+
+  if (!name) {
+    previewing.value = false;
+    return;
+  }
+
+  preview_title.value = name;
+
+  let pos = name.lastIndexOf('.');
+  if (pos >= 0) name = name.substring(pos+1).toLowerCase();
+
+  preview_link.value = '//'+location.host+'/prvw/?b='+bkts.value[bktIdx.value].i+'&v='+v+'&t='+name;
+};
+
+const exitPreview = () => {
+  previewing.value = false;
+  let query = router.currentRoute.value.query;
+  router.push({ name: "home", query: { b: query.b, i: query.i } });
 };
 
 </script>

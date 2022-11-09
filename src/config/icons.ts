@@ -33,7 +33,7 @@ export function toIcon(item:any):string {
   if (item.t == 1) {return '/icons/dir.svg';}
   if (item.t == 2) {
     let pos = item.n.lastIndexOf('.');
-    if (pos >= 0) { return '/icons/' + extension(item.n.substr(pos+1)) + '.svg'; }
+    if (pos >= 0) { return '/icons/' + extension(item.n.substring(pos+1)) + '.svg'; }
   }
   return '/icons/none.svg';
 }
