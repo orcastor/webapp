@@ -310,6 +310,7 @@ const exitPreview = () => {
 .main {
   min-height: 100vh;
   overflow: auto;
+  padding: 0;
   :deep(tr.el-table__row) {
     cursor: pointer;
   }
