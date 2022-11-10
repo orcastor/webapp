@@ -183,18 +183,19 @@ const onRootDir = () => {
 };
 
 const get = async(b:number, i:number):Promise<any> => {
-  let cached = cache.get(b+'-'+i);
+  let cached = cache.get(b + '-' + i);
   if (!cached) {
     let req:Object.ReqGet = { b, i };
     const res = await getApi(req);
     cached = res.data!.o;
     if (!cached) return;
-    cache.put(b+'-'+i, cached);
+    cache.put(b + '-' + i, cached);
   }
   return cached;
 }
 
 const loadData = async (b:number, p:number) => {
+  previewing.value = false;
   loading.value = true;
   try {
     const o:Object.ListOption = { c: 1000, b: 1 };
@@ -206,7 +207,7 @@ const loadData = async (b:number, p:number) => {
       for (let i = 0; i < tableData.value.length; i++) {
         const f = tableData.value[i] as any;
         // 只要目录
-        if (f.t == 1) cache.put(b+'-'+f.i, {...f, p: p} );
+        if (f.t == 1) cache.put(b + '-' + f.i, {...f, p: p} );
       }
     }
   } finally {
@@ -294,7 +295,7 @@ const preview = async (b:number, v:number)=> {
   let pos = name.lastIndexOf('.');
   if (pos >= 0) name = name.substring(pos+1).toLowerCase();
 
-  preview_link.value = '//'+location.host+'/prvw/?b='+bkts.value[bktIdx.value].i+'&v='+v+'&t='+name;
+  preview_link.value = '//' + location.host + '/prvw/?b=' + bkts.value[bktIdx.value].i + '&i=' + v + '&t=' + name;
 };
 
 const exitPreview = () => {
