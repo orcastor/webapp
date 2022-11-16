@@ -295,7 +295,7 @@ const preview = async (b:number, v:number)=> {
   let pos = name.lastIndexOf('.');
   if (pos >= 0) name = name.substring(pos+1).toLowerCase();
 
-  preview_link.value = '//' + location.host + '/prvw/?b=' + bkts.value[bktIdx.value].i + '&i=' + v + '&t=' + name;
+  preview_link.value = `//${location.host}/prvw/?b=${bkts.value[bktIdx.value].i}&i=${v}&t=${name}`;
 };
 
 const exitPreview = () => {
