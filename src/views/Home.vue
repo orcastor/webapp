@@ -66,7 +66,7 @@
         <iframe v-if="previewing"
           v-loading="loading" 
           :src="preview_link"
-          style="width:100%; height:85vh;"
+          :style=iframeStyle()
           :onload="loading = false"
           frameborder="0"
         />
@@ -127,6 +127,10 @@ const preview_link = ref('');
 const userInfo = computed(() => store.userInfo);
 const bkts = computed(() => store.bkts);
 const isCollapse = ref(store.isCollapse);
+
+const iframeStyle = () => {
+  return 'width:100%; height:'+(100-5500/document.body.clientHeight).toFixed(2)+'vh;';
+}
 
 const cache = new Cache(100, null);
 
@@ -308,8 +312,7 @@ const exitPreview = () => {
 
 <style scoped lang="scss">
 .main {
-  min-height: 100vh;
-  overflow: auto;
+  overflow: hidden;
   padding: 0;
   :deep(tr.el-table__row) {
     cursor: pointer;
