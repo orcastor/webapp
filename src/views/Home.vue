@@ -2,7 +2,7 @@
   <el-container>
     <el-aside 
       class="menu"
-      :width="isCollapse ? '64px' : '200px'"
+      :width="isMob ? (isCollapse ? '0px' : '200px'): (isCollapse ? '64px' : '200px')"
     >
       <div class="logo flx-center">
         <a href="https://github.com/orcastor" target="_blank">
@@ -128,6 +128,8 @@ const userInfo = computed(() => store.userInfo);
 const bkts = computed(() => store.bkts);
 const isCollapse = ref(store.isCollapse);
 
+const isMob = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i);
+
 const iframeStyle = () => {
   return 'width:100%; height:'+(100-5500/document.body.clientHeight).toFixed(2)+'vh;';
 }
@@ -173,6 +175,9 @@ const onRowClick = (row:any, _column:any, _event:any) => {
 const onMenuClick = (item:any) => {
   bktIdx.value = item.index;
   onRootDir();
+  if (isMob) {
+    setCollapse();
+  }
 };
 
 const setCollapse = () => {
@@ -312,12 +317,14 @@ const exitPreview = () => {
 
 <style scoped lang="scss">
 .main {
-  overflow: hidden;
+  min-height: 100vh;
+  overflow: auto;
   padding: 0;
   :deep(tr.el-table__row) {
     cursor: pointer;
   }
 }
+
 .header {
   box-sizing: border-box;
   display: flex;
