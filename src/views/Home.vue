@@ -68,7 +68,6 @@
           :src="preview_link"
           :style=iframeStyle()
           :onload="loading = false"
-          frameborder="0"
         />
         <el-empty v-else-if="!tableData" description="空目录" />
         <el-table v-else
@@ -79,7 +78,7 @@
         >
           <el-table-column width="56">
             <template #default="scope">
-              <el-image :src=toIcon(scope.row) style="width: 32px;"/>
+              <el-image v-if="scope.row.icon" :src="scope.row.icon" style="width: {{ iconSize }}px;"/>
             </template>
           </el-table-column>
           <el-table-column label="文件名" min-width="180" show-overflow-tooltip sortable prop="n">
@@ -106,7 +105,7 @@ import router from "@/routers";
 
 import { store } from "@/store";
 import { Back, HomeFilled, Expand, Fold, Box } from '@element-plus/icons-vue'
-import { toIcon } from "@/config/icons";
+import { toDefaultIcon, toIcon, getExt } from "@/config/icons";
 
 import { Cache } from "@/store/cache";
 
@@ -123,6 +122,7 @@ const breadcrumbs = ref([]);
 const previewing = ref(false);
 const preview_title = ref('');
 const preview_link = ref('');
+const iconSize = ref(32);
 
 const userInfo = computed(() => store.userInfo);
 const bkts = computed(() => store.bkts);
@@ -131,7 +131,7 @@ const isCollapse = ref(store.isCollapse);
 const isMob = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i);
 
 const iframeStyle = () => {
-  return 'width:100%; height:'+(100-5500/document.body.clientHeight).toFixed(2)+'vh;';
+  return 'border: 0; width:100%; height:'+(100-5500/document.body.clientHeight).toFixed(2)+'vh;';
 }
 
 const cache = new Cache(100, null);
@@ -217,10 +217,20 @@ const loadData = async (b:number, p:number) => {
         const f = tableData.value[i] as any;
         // 只要目录
         if (f.t == 1) cache.put(b + '-' + f.i, {...f, p: p} );
+        f.icon = toDefaultIcon(f)
       }
     }
   } finally {
     loading.value = false;
+  }
+  try {
+    if (tableData.value) {
+      for (let i = 0; i < tableData.value.length; i++) {
+        const f = tableData.value[i] as any;
+        f.icon = await toIcon(router.currentRoute.value.query.b, f, iconSize.value)
+      }
+    }
+  } finally {
   }
 
   let i = p;
@@ -301,10 +311,8 @@ const preview = async (b:number, v:number)=> {
   let name = obj.n;
   preview_title.value = name;
 
-  let pos = name.lastIndexOf('.');
-  if (pos >= 0) name = name.substring(pos+1).toLowerCase();
-
-  preview_link.value = `//${location.host}/prvw/?b=${bkts.value[bktIdx.value].i}&i=${v}&t=${name}`;
+  let ext = getExt(name);
+  preview_link.value = `//${location.host}/prvw/?b=${bkts.value[bktIdx.value].i}&i=${v}&t=${ext}`;
 };
 
 const exitPreview = () => {
