@@ -9,7 +9,7 @@ const types:{[key: string]: string} = {
   "txt": "txt,php,js,ts,tsx,vue,py,cpp,c,h,md,htm,html,css,go,xml,json,toml,yml,sh,java",
   "video": "mp4,rmv,rm,rmvb,mkv,wmv,flv,avi,mov,3gp,mpeg",
   "xls": "csv,xls,xlsx,xlt,numbers",
-  "zip": "rar,zip,7z,xz,gz,dmg,jar",
+  "zip": "rar,zip,7z,xz,gz,bz2,br,zz,zst,lz4,tar,sz",
   "ico": "ico,icns,exe,dll,mui,mun,apk,ipa",
 };
 
@@ -21,15 +21,24 @@ Object.keys(types).forEach(key => {
   });
 });
 
-const getType = (n: string): string => mapping[getExt(n)] || "none";
+export const isZip = (n: string):boolean => getType(n+'') == 'zip';
 
-export const getExt = (n: string): string => (n.match(/\.([^.]+)$/) ?? [])[1]?.toLowerCase() || '';
+export const getType = (n: string):string => mapping[getExt(n+'')] || "none";
+
+export const getExt = (n: string):string => ((n+'').match(/\.([^.]+)$/) ?? [])[1]?.toLowerCase() || '';
 
 import { store } from "@/store";
 import { ResultEnum } from "@/api";
 
-async function thumb(b:number, item:any, s:number, fail:string):Promise<string> {
-  return fetch(`//${location.host}/prvw/api/thumb/png?b=${b}&i=${item.i}&w=${s}&h=${s}&token=${store.token}`)
+async function thumb(b:number, item:any, i:number, r:any, s:number, fail:string):Promise<string> {
+  let url;
+  if (typeof r === 'string' && r != '') {
+    let n = [r, item.n].join('/');
+    url = `//${location.host}/prvw/api/thumb/png?b=${b}&i=${i}&r=${n}&w=${s}&h=${s}&token=${store.token}`
+  } else {
+    url = `//${location.host}/prvw/api/thumb/png?b=${b}&i=${item?.i}&w=${s}&h=${s}&token=${store.token}`;
+  }
+  return fetch(url)
     .then(response => {
       if (!response.ok || response.status != ResultEnum.SUCCESS) throw new Error(`HTTP error! Status: ${response.status}`);
       return response.blob();
@@ -44,23 +53,19 @@ async function thumb(b:number, item:any, s:number, fail:string):Promise<string> 
 }
 
 export function toDefaultIcon(item:any):string {
-  if (item.t == 1) {
+  if (item?.t == 1) {
     return '/icons/dir.svg';
   }
-  return '/icons/' + getType(item.n) + '.svg';;
+  return '/icons/' + getType(item?.n) + '.svg';;
 }
 
-export async function toIcon(b:number, item:any, s:number):Promise<string> {
-  let fail = '/icons/none.svg';
-  if (item.t == 1) {
-    fail = '/icons/dir.svg';
-    if (item.n.endsWith('.app'))
-        return await thumb(b, item, s, fail);
-    return fail;
+export async function toIcon(b:number, item:any, i:number, r:any, s:number):Promise<string> {
+  if (item?.t == 1) {
+    if (item?.n.endsWith('.app')) return await thumb(b, item, i, r, s, '/icons/dir.svg');
+    return '/icons/dir.svg';
   }
-  const type = getType(item.n);
-  fail = '/icons/' + type + '.svg';
-  switch (type) {
+  const t = getType(item?.n);
+  switch (t) {
     case "pic":
     case "doc":
     case "ppt":
@@ -68,8 +73,8 @@ export async function toIcon(b:number, item:any, s:number):Promise<string> {
     case "pdf":
     case "cad":
     case "ico":
-      return await thumb(b, item, s, fail);
+      return await thumb(b, item, i, r, s, `/icons/${t}.svg`);
     default:
-      return fail; 
+      return `/icons/${t}.svg`; 
   }
 }

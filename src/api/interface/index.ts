@@ -23,28 +23,44 @@ export namespace Login {
 }
 
 export namespace Object {
-  export interface ListOption {
+  export interface ReqList {
+    p: number;
+    b: number;
     w?: string;
     d?: string;
     t?: number;
     c: number;
     o?: string;
-    b?: number;
-  }
-  export interface ReqList {
-    p: number;
-    b: number;
-    o: ListOption;
+    e?: number;
   }
   export interface ObjectInfo {
     i: number; // id
-    p: number; // pid
+    p?: number; // pid
     m: number; // mtime
-    d: number; // did
+    d?: number; // did
     t: number; // type
     n: string; // name
-    s: number; //size
-    e: any; // ext
+    s?: number; //size
+    e?: any; // ext
+  }
+  export interface ResList {
+    o?: ObjectInfo[];
+  }
+  export interface ReqGet {
+    b: number;
+    i: number;
+  }
+  export interface ResGet {
+    o?: ObjectInfo;
+  }
+}
+
+export namespace Preview {
+  export interface ObjectInfo {
+    m: number; // mtime
+    t: number; // type
+    n?: string; // name
+    s?: number; //size
   }
   export interface ResList {
     o?: ObjectInfo[];

@@ -41,7 +41,7 @@
           <el-breadcrumb v-else >
             <transition-group name="breadcrumb" mode="out-in">
               <el-breadcrumb-item
-                v-for="item in breadcrumbs as any"
+                v-for="item in bcs as any"
                 :key="item.path"
                 :to="{ path: item.path, query: item.query }"
               >
@@ -69,16 +69,16 @@
           :style=iframeStyle()
           :onload="loading = false"
         />
-        <el-empty v-else-if="!tableData" description="空目录" />
+        <el-empty v-else-if="data?.lenth == 0" description="空目录" />
         <el-table v-else
-          :data="tableData"
+          :data="data"
           style="width: 100%;"
           @row-click="onRowClick"
           v-loading="loading"
         >
           <el-table-column width="56">
             <template #default="scope">
-              <el-image v-if="scope.row.icon" :src="scope.row.icon" style="width: {{ iconSize }}px;"/>
+              <el-image v-if="scope.row.icon" :src="scope.row.icon" style="width: {{ ico_size }}px;"/>
             </template>
           </el-table-column>
           <el-table-column label="文件名" min-width="180" show-overflow-tooltip sortable prop="n">
@@ -104,25 +104,27 @@ import { ref, computed, watch, onMounted } from 'vue';
 import router from "@/routers";
 
 import { store } from "@/store";
-import { Back, HomeFilled, Expand, Fold, Box } from '@element-plus/icons-vue'
-import { toDefaultIcon, toIcon, getExt } from "@/config/icons";
+import { Back, HomeFilled, Expand, Fold, Box } from '@element-plus/icons-vue';
+import { toDefaultIcon, toIcon, getExt, isZip } from "@/config/icons";
 
 import { Cache } from "@/store/cache";
 
 import { Object } from "@/api/interface";
 import { listApi, getApi } from "@/api/modules/object";
+import { prvwListApi } from "@/api/modules/prvw";
 
 import 'element-plus/es/components/message-box/style/css';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const bktIdx = ref(0);
 const loading = ref(true);
-const tableData = ref([]);
-const breadcrumbs = ref([]);
+const data = ref([]);
+const bcs = ref([]);
 const previewing = ref(false);
 const preview_title = ref('');
 const preview_link = ref('');
-const iconSize = ref(32);
+const ico_size = ref(32);
+const is_zip = ref(false);
 
 const userInfo = computed(() => store.userInfo);
 const bkts = computed(() => store.bkts);
@@ -163,12 +165,18 @@ const listeningWindow = () => {
 listeningWindow();
 
 const onRowClick = (row:any, _column:any, _event:any) => {
-  if (row.t == 1) {
-    const query = {b: bkts.value[bktIdx.value].i, i: row.i};
-    breadcrumbs.value.push({ path: '/', query, meta: {title: row.n} } as never);
+  is_zip.value = isZip(row.n) || router.currentRoute.value.query?.r;
+  if (row?.t == 1 || (is_zip.value && (!router.currentRoute.value.query?.r || row?.t == 1))) {
+    const query = {b: bkts.value[bktIdx.value].i, i: row.i ? row.i : router.currentRoute.value.query?.i, r: router.currentRoute.value.query?.r};
+    if (!query.r) {
+      if (is_zip.value) query.r = ".";
+      bcs.value.push({ path: '/', query, meta: {title: row.n} } as never);
+    } else {
+      if (is_zip.value) query.r += ("/" + row.n);
+    }
     router.push({ name: "home", query });
   } else {
-    router.push({ name: "home", query: { ...router.currentRoute.value.query, v: row.i } });
+    router.push({ name: "home", query: { ...router.currentRoute.value.query, v: row.i} });
   }
 };
 
@@ -187,7 +195,7 @@ const setCollapse = () => {
 
 const onRootDir = () => {
   const b = bkts.value[bktIdx.value].i;
-  breadcrumbs.value = [];
+  bcs.value = [];
   router.push({ name: "home", query: { b } });
 };
 
@@ -206,32 +214,6 @@ const get = async(b:number, i:number):Promise<any> => {
 const loadData = async (b:number, p:number) => {
   previewing.value = false;
   loading.value = true;
-  try {
-    const o:Object.ListOption = { c: 1000, b: 1 };
-    const req:Object.ReqList = { b, p, o };
-    const res = await listApi(req);
-    tableData.value = res.data!.o as never;
-    // 设置到缓存
-    if (tableData.value) {
-      for (let i = 0; i < tableData.value.length; i++) {
-        const f = tableData.value[i] as any;
-        // 只要目录
-        if (f.t == 1) cache.put(b + '-' + f.i, {...f, p: p} );
-        f.icon = toDefaultIcon(f)
-      }
-    }
-  } finally {
-    loading.value = false;
-  }
-  try {
-    if (tableData.value) {
-      for (let i = 0; i < tableData.value.length; i++) {
-        const f = tableData.value[i] as any;
-        f.icon = await toIcon(router.currentRoute.value.query.b, f, iconSize.value)
-      }
-    }
-  } finally {
-  }
 
   let i = p;
   let bc:any[] = [];
@@ -243,7 +225,40 @@ const loadData = async (b:number, p:number) => {
     } finally {
     }
   }
-  breadcrumbs.value = bc as never[];
+  bcs.value = bc as never[];
+  is_zip.value = isZip(bc[bc.length - 1]?.meta?.title);
+  let q = router.currentRoute.value.query;
+  try {
+    const req:Object.ReqList = { b, p, e: 1, r: q?.r };
+    const res = is_zip.value ? await prvwListApi(req) : await listApi(req);
+    data.value = res.data!.o as never;
+    // 设置到缓存
+    if (data.value) {
+      for (let x = 0; x < data.value.length; x++) {
+        const f = data.value[x] as any;
+        // 只要目录
+        if (f.t == 1) cache.put(b + '-' + f.i, {...f, p: p} );
+        f.icon = toDefaultIcon(f);
+      }
+    }
+  } finally {
+    loading.value = false;
+  }
+
+  // 最后延迟显示icon
+  try {
+    if (data.value) {
+      for (let i = 0; i < data.value.length; i++) {
+        const f = data.value[i] as any;
+        if (q?.r != '') {
+          f.icon = await toIcon(q.b, f, q.i, q.r, ico_size.value)
+        } else {
+          f.icon = await toIcon(q.b, f, f.i, '', ico_size.value)
+        }
+      }
+    }
+  } finally {
+  }
 };
 
 watch(() => router.currentRoute.value.query, (_newValue:any, _oldValue:any) => {
@@ -297,7 +312,7 @@ const logout = () => {
   });
 };
 
-const preview = async (b:number, v:number)=> {
+const preview = async (b:number, v:number) => {
   if (!v) return;
 
   previewing.value = true;
@@ -342,7 +357,7 @@ const exitPreview = () => {
   padding: 0 15px;
   background-color: #ffffff;
   border-bottom: 1px solid #f6f6f6;
-  .header-lf{
+  .header-lf {
     .collapse-icon {
       margin-right: 20px;
       font-size: 22px;
