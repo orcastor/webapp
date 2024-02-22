@@ -165,9 +165,10 @@ const listeningWindow = () => {
 listeningWindow();
 
 const onRowClick = (row:any, _column:any, _event:any) => {
-  is_zip.value = isZip(row.n) || router.currentRoute.value.query?.r;
-  if (row?.t == 1 || (is_zip.value && (!router.currentRoute.value.query?.r || row?.t == 1))) {
-    const query = {b: bkts.value[bktIdx.value].i, i: row.i ? row.i : router.currentRoute.value.query?.i, r: router.currentRoute.value.query?.r};
+  let q = router.currentRoute.value.query;
+  is_zip.value = isZip(row.n) || q?.r;
+  if (row?.t == 1 || (is_zip.value && (!q?.r || row?.t == 1))) {
+    const query = {b: bkts.value[bktIdx.value].i, i: row.i ? row.i : q?.i, r: q?.r};
     if (!query.r) {
       if (is_zip.value) query.r = ".";
       bcs.value.push({ path: '/', query, meta: {title: row.n} } as never);
@@ -176,7 +177,7 @@ const onRowClick = (row:any, _column:any, _event:any) => {
     }
     router.push({ name: "home", query });
   } else {
-    router.push({ name: "home", query: { ...router.currentRoute.value.query, v: row.i} });
+    router.push({ name: "home", query: { ...q, v: row.i} });
   }
 };
 
@@ -248,13 +249,24 @@ const loadData = async (b:number, p:number) => {
   // 最后延迟显示icon
   try {
     if (data.value) {
-      for (let i = 0; i < data.value.length; i++) {
-        const f = data.value[i] as any;
-        if (q?.r != '') {
-          f.icon = await toIcon(q.b, f, q.i, q.r, ico_size.value)
-        } else {
-          f.icon = await toIcon(q.b, f, f.i, '', ico_size.value)
+      let start = 0;
+      const count = 10;
+      while (start < data.value.length) {
+        let icons = [];
+        for (let i = start; i < start + count && i < data.value.length; i++) {
+          const f = data.value[i] as any;
+          if (q?.r != '') {
+            icons.push(toIcon(q.b, f, q.i, q.r, ico_size.value));
+          } else {
+            icons.push(toIcon(q.b, f, f.i, '', ico_size.value));
+          }
         }
+        const res = await Promise.all(icons);
+        for (let i = start; i < start + count && i < data.value.length; i++) {
+          const f = data.value[i] as any;
+          f.icon = res[i-start];
+        }
+        start += count;
       }
     }
   } finally {
