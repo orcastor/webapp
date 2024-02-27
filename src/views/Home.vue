@@ -11,10 +11,10 @@
         <span v-show="!isCollapse"></span>
       </div>
       <el-menu
-        active-text-color="#ffd04b"
-        background-color="#1a1a1a"
+        active-text-color="#EF7C00"
+        background-color="#F8F8F8"
         :default-active="bktIdx"
-        text-color="#fff"
+        text-color="#004482"
         :collapse="isCollapse"
       >
         <el-menu-item v-for="(b, i) in bkts" :index="i" @click="onMenuClick">
@@ -415,12 +415,11 @@ const exitPreview = () => {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  background-color: #191a20;
+  background-color: #F8F8F8;
   transition: all 0.3s ease;
   .logo {
     box-sizing: border-box;
     height: 55px;
-    border-bottom: 1px solid #282a35;
     box-shadow: 2px 0 6px rgb(0 21 41 / 35%);
     span {
       font-size: 22px;
@@ -444,7 +443,7 @@ const exitPreview = () => {
 .el-menu--popup {
   .el-menu-item {
     &.is-active {
-      background-color: #060708;
+      background-color: #fff;
       &::before {
         position: absolute;
         top: 0;
@@ -452,7 +451,6 @@ const exitPreview = () => {
         left: 0;
         width: 4px;
         content: "";
-        background: #00B8E8;
       }
     }
   }
