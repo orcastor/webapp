@@ -24,6 +24,17 @@
           </template>
         </el-menu-item>
       </el-menu>
+      <el-dropdown trigger="click">
+        <div class="avatar flx-center">
+            <el-avatar :size="30" src="/avatar.png" />
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item disabled>{{userInfo.n}}</el-dropdown-item>
+            <el-dropdown-item divided @click="logout">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </el-aside>
     <el-container>
       <el-header class="header">
@@ -50,17 +61,6 @@
             </transition-group>
           </el-breadcrumb>
         </div>
-        <el-dropdown trigger="click">
-          <div class="header-ri flx-center">
-              <el-avatar :size="30" src="/avatar.png" />
-          <span class="username">{{userInfo.n}}</span>
-          </div>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
       </el-header>
       <el-main class="main" :style=mainStyle()>
         <iframe v-if="previewing"
@@ -403,39 +403,8 @@ const exitPreview = () => {
       cursor: pointer;
     }
   }
-  .header-ri {
-    margin: 0 20px;
-    cursor: pointer;
-    .header-icon {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 190px;
-      margin-right: 22px;
-      .icon-style {
-        font-size: 20px;
-        color: rgb(0 0 0 / 75%);
-        cursor: pointer;
-      }
-    }
-    .username {
-      margin: 0 0 0 5px;
-      font-size: 15px;
-      color: rgb(0 0 0 / 75%);
-    }
-    .avatar {
-      width: 40px;
-      height: 40px;
-      overflow: hidden;
-      cursor: pointer;
-      border-radius: 50%;
-      img {
-        width: 100%;
-        height: 100%;
-      }
-    }
-  }
 }
+
 .menu {
   position: relative;
   box-sizing: border-box;
@@ -465,6 +434,13 @@ const exitPreview = () => {
     border-right: none;
   }
 }
+
+.avatar {
+  height: 55px;
+  margin: 0 20px;
+  cursor: pointer;
+}
+
 .el-menu,
 .el-menu--popup {
   .el-menu-item {
