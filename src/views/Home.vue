@@ -62,7 +62,7 @@
           </template>
         </el-dropdown>
       </el-header>
-      <el-main class="main">
+      <el-main class="main" :style=mainStyle()>
         <iframe v-if="previewing"
           v-loading="loading" 
           :src="preview_link"
@@ -136,6 +136,10 @@ const iframeStyle = () => {
   return 'border: 0; width:100%; height:'+(100-5500/document.body.clientHeight).toFixed(2)+'vh;';
 }
 
+const mainStyle = () => {
+  return 'min-height:'+(100-5500/document.body.clientHeight).toFixed(2)+'vh;';
+}
+
 const cache = new Cache(100, null);
 
 function toSize(scope:any):string {
@@ -165,20 +169,36 @@ const listeningWindow = () => {
 listeningWindow();
 
 const onRowClick = (row:any, _column:any, _event:any) => {
-  let q = router.currentRoute.value.query;
-  is_zip.value = isZip(row.n) || q?.r;
-  if (row?.t == 1 || (is_zip.value && (!q?.r || row?.t == 1))) {
-    const query = {b: bkts.value[bktIdx.value].i, i: row.i ? row.i : q?.i, r: q?.r};
-    if (!query.r) {
-      if (is_zip.value) query.r = ".";
-      bcs.value.push({ path: '/', query, meta: {title: row.n} } as never);
-    } else {
-      if (is_zip.value) query.r += ("/" + row.n);
-    }
-    router.push({ name: "home", query });
-  } else {
-    router.push({ name: "home", query: { ...q, v: row.i} });
+  const q = router.currentRoute.value.query;
+  const isZipFile = isZip(row.n);
+  const hasRouteParam = !!q.r;
+
+  // 设置路由参数 query.r
+  let newRouteParam = '';
+  if (isZipFile && !hasRouteParam) {
+    newRouteParam = '.';
+  } else if (hasRouteParam) {
+    newRouteParam = q.r + '/' + row.n;
   }
+  
+  // 构建新的 query 对象
+  const query = {
+    b: bkts.value[bktIdx.value].i,
+    i: (!row.i || (row.t !== 1 && !isZipFile)) ? q.i : row.i,
+    r: newRouteParam || q.r
+  };
+
+  // 如果不是目录且不是zip文件，则添加 v 参数
+  if (row.t !== 1 && !isZipFile) {
+    query.v = row.i ? row.i : q.i;
+  }
+
+  // 只在首次点击 zip 文件时向 bcs.value 添加项
+  if (row.t === 1 || (isZipFile && !hasRouteParam)) {
+    bcs.value.push({ path: '/', query, meta: { title: row.n } });
+  }
+
+  router.push({ name: "home", query });
 };
 
 const onMenuClick = (item:any) => {
@@ -222,10 +242,13 @@ const loadData = async (b:number, p:number) => {
     try {
       const obj = await get(b, i);
       i = obj.p || 0;
-      bc.unshift({ path: '/', query: { b, i: obj.i }, meta: {title: obj.n}});
+      let query = { b, i: obj.i };
+      if (isZip(obj.n)) query.r = '.';
+      bc.unshift({ path: '/', query, meta: {title: obj.n}});
     } finally {
     }
   }
+
   bcs.value = bc as never[];
   is_zip.value = isZip(bc[bc.length - 1]?.meta?.title);
   let q = router.currentRoute.value.query;
@@ -303,7 +326,7 @@ const init = () => {
   const v = parseInt(query.v+'');
   if (bkts.value.length > 0) {
     const b = bkts.value[bktIdx.value].i as number;
-    if (v) preview(b, v);
+    if (v) preview(b, v, query?.r || '');
     else loadData(b, i);
   }
 };
@@ -324,7 +347,7 @@ const logout = () => {
   });
 };
 
-const preview = async (b:number, v:number) => {
+const preview = async (b:number, v:number, r:string) => {
   if (!v) return;
 
   previewing.value = true;
@@ -335,17 +358,20 @@ const preview = async (b:number, v:number) => {
     return;
   }
 
-  let name = obj.n;
+  let q = router.currentRoute.value.query;
+  let name = q.r ? (q.r.match(/\/([^\/]+)$/) ?? [])[1] as string : obj.n;
   preview_title.value = name;
 
   let ext = getExt(name);
-  preview_link.value = `//${location.host}/prvw/?b=${bkts.value[bktIdx.value].i}&i=${v}&t=${ext}`;
+  preview_link.value = `//${location.host}/prvw/?b=${bkts.value[bktIdx.value].i}&i=${v}&t=${ext}` + (!!r ? `&r=${r}` : '');
 };
 
 const exitPreview = () => {
   previewing.value = false;
-  let query = router.currentRoute.value.query;
-  router.push({ name: "home", query: { b: query.b, i: query.i } });
+  let q = router.currentRoute.value.query;
+  let query = { b: q.b, i: q.i};
+  if (q.r) query.r = (q.r.match(/(.*)\/[^\/]+$/) ?? [])[1];
+  router.push({ name: "home", query });
 };
 
 </script>
