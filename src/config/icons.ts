@@ -1,16 +1,18 @@
 const types:{[key: string]: string} = {
-  "audio": "mp3,wma,wav,ape,flac,ogg,aac,lrc",
-  "doc": "doc,docx,doct,wps,pages,xps",
-  "cad": "dwg,dxf",
-  "link": "lnk",
-  "pdf": "pdf",
-  "pic": "jpg,jpeg,png,gif,bmp,svg,tiff,webp",
-  "ppt": "ppt,pptx,pps,key",
-  "txt": "txt,php,js,ts,tsx,vue,py,cpp,c,h,md,htm,html,css,go,xml,json,toml,yml,sh,java",
-  "video": "mp4,rmv,rm,rmvb,mkv,wmv,flv,avi,mov,3gp,mpeg",
-  "xls": "csv,xls,xlsx,xlt,numbers",
-  "zip": "rar,zip,7z,xz,gz,bz2,br,zz,zst,lz4,tar,sz",
-  "ico": "ico,icns,exe,dll,mui,mun,apk,ipa",
+  "audio.svg": "mp3,wma,wav,ape,flac,ogg,aac,lrc",
+  "doc.svg": "doc,docx,doct,wps,pages,xps",
+  "cad.svg": "dwg,dxf",
+  "link.svg": "lnk",
+  "pdf.svg": "pdf",
+  "pic.svg": "jpg,jpeg,png,gif,bmp,svg,tiff,webp",
+  "ppt.svg": "ppt,pptx,pps,key",
+  "txt.svg": "txt,php,js,ts,tsx,vue,py,cpp,c,h,md,htm,html,css,go,xml,json,toml,yml,sh,java",
+  "video.svg": "mp4,rmv,rm,rmvb,mkv,wmv,flv,avi,mov,3gp,mpeg",
+  "xls.svg": "csv,xls,xlsx,xlt,numbers",
+  "zip.svg": "rar,zip,7z,xz,gz,bz2,br,zz,zst,lz4,tar,sz",
+  "ico.svg": "ico,icns,exe,dll,mui,mun,apk,ipa",
+  "dll.png": "dll",
+  "msi.png": "msi",
 };
 
 let mapping:{[key: string]: string} = {};
@@ -21,9 +23,9 @@ Object.keys(types).forEach(key => {
   });
 });
 
-export const isZip = (n: string):boolean => getType(n+'') == 'zip';
+export const isZip = (n: string):boolean => getType(n+'') == 'zip.svg';
 
-export const getType = (n: string):string => mapping[getExt(n+'')] || "none";
+export const getType = (n: string):string => mapping[getExt(n+'')] || "none.svg";
 
 export const getExt = (n: string):string => ((n+'').match(/\.([^.]+)$/) ?? [])[1]?.toLowerCase() || '';
 
@@ -56,7 +58,7 @@ export function toDefaultIcon(item:any):string {
   if (item?.t == 1) {
     return '/icons/dir.svg';
   }
-  return '/icons/' + getType(item?.n) + '.svg';;
+  return '/icons/' + getType(item?.n);
 }
 
 export async function toIcon(b:number, item:any, i:number, r:any, s:number):Promise<string> {
@@ -66,15 +68,15 @@ export async function toIcon(b:number, item:any, i:number, r:any, s:number):Prom
   }
   const t = getType(item?.n);
   switch (t) {
-    case "pic":
-    case "doc":
-    case "ppt":
-    case "xls":
-    case "pdf":
-    case "cad":
-    case "ico":
-      return await thumb(b, item, i, r, s, `/icons/${t}.svg`);
+    case "pic.svg":
+    case "doc.svg":
+    case "ppt.svg":
+    case "xls.svg":
+    case "pdf.svg":
+    case "cad.svg":
+    case "ico.svg":
+      return await thumb(b, item, i, r, s, `/icons/${t}`);
     default:
-      return `/icons/${t}.svg`; 
+      return `/icons/${t}`; 
   }
 }

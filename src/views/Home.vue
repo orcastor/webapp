@@ -24,8 +24,8 @@
           </template>
         </el-menu-item>
       </el-menu>
-      <el-dropdown trigger="click">
-        <div class="avatar flx-center">
+      <el-dropdown trigger="click" class="avatar flx-center">
+        <div>
             <el-avatar :size="30" src="/avatar.png" />
         </div>
         <template #dropdown>
@@ -437,7 +437,6 @@ const exitPreview = () => {
 
 .avatar {
   height: 55px;
-  margin: 0 20px;
   cursor: pointer;
 }
 
