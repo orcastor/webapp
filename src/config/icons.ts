@@ -36,9 +36,9 @@ async function thumb(b:number, item:any, i:number, r:any, s:number, fail:string)
   let url;
   if (typeof r === 'string' && r != '') {
     let n = [r, item.n].join('/');
-    url = `//${location.host}/prvw/api/thumb/png?b=${b}&i=${i}&r=${n}&w=${s}&h=${s}&token=${store.token}`
+    url = `//${location.host}/prvw/api/thumb/jpg?b=${b}&i=${i}&r=${n}&w=${s}&h=${s}&token=${store.token}`
   } else {
-    url = `//${location.host}/prvw/api/thumb/png?b=${b}&i=${item?.i}&w=${s}&h=${s}&token=${store.token}`;
+    url = `//${location.host}/prvw/api/thumb/jpg?b=${b}&i=${item?.i}&w=${s}&h=${s}&token=${store.token}`;
   }
   return fetch(url)
     .then(response => {
@@ -75,6 +75,7 @@ export async function toIcon(b:number, item:any, i:number, r:any, s:number):Prom
     case "pdf.svg":
     case "cad.svg":
     case "ico.svg":
+    case "video.svg":
       return await thumb(b, item, i, r, s, `/icons/${t}`);
     default:
       return `/icons/${t}`; 
