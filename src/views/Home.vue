@@ -124,7 +124,6 @@ const previewing = ref(false);
 const preview_title = ref('');
 const preview_link = ref('');
 const ico_size = ref(32);
-const is_zip = ref(false);
 
 const userInfo = computed(() => store.userInfo);
 const bkts = computed(() => store.bkts);
@@ -170,31 +169,22 @@ listeningWindow();
 
 const onRowClick = (row:any, _column:any, _event:any) => {
   const q = router.currentRoute.value.query;
-  const isZipFile = isZip(row.n);
-  const hasRouteParam = !!q.r;
-
-  // 设置路由参数 query.r
-  let newRouteParam = '';
-  if (isZipFile && !hasRouteParam) {
-    newRouteParam = '.';
-  } else if (hasRouteParam) {
-    newRouteParam = q.r + '/' + row.n;
-  }
+  const is_zip = isZip(row.n);
   
   // 构建新的 query 对象
   const query = {
     b: bkts.value[bktIdx.value].i,
-    i: (!row.i || (row.t !== 1 && !isZipFile)) ? q.i : row.i,
-    r: newRouteParam || q.r
+    i: (!row.i || (row.t !== 1 && !is_zip)) ? q.i : row.i,
+    r: ((is_zip && !q.r) ? '.' : (!!q.r ? (q.r + '/' + row.n) : '')) || q.r
   };
 
   // 如果不是目录且不是zip文件，则添加 v 参数
-  if (row.t !== 1 && !isZipFile) {
+  if (row.t !== 1 && !is_zip) {
     query.v = row.i ? row.i : q.i;
   }
 
   // 只在首次点击 zip 文件时向 bcs.value 添加项
-  if (row.t === 1 || (isZipFile && !hasRouteParam)) {
+  if (row.t === 1 || (is_zip && !q.r)) {
     bcs.value.push({ path: '/', query, meta: { title: row.n } });
   }
 
@@ -250,11 +240,11 @@ const loadData = async (b:number, p:number) => {
   }
 
   bcs.value = bc as never[];
-  is_zip.value = isZip(bc[bc.length - 1]?.meta?.title);
+  let is_zip = isZip(bc[bc.length - 1]?.meta?.title);
   let q = router.currentRoute.value.query;
   try {
     const req:Object.ReqList = { b, p, e: 1, r: q?.r };
-    const res = is_zip.value ? await prvwListApi(req) : await listApi(req);
+    const res = is_zip ? await prvwListApi(req) : await listApi(req);
     data.value = res.data!.o as never;
     // 设置到缓存
     if (data.value) {
