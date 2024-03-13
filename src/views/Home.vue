@@ -405,7 +405,6 @@ const exitPreview = () => {
   .logo {
     box-sizing: border-box;
     height: 55px;
-    box-shadow: 2px 0 6px rgb(0 21 41 / 35%);
     span {
       font-size: 22px;
       font-weight: bold;
