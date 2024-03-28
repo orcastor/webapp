@@ -26,7 +26,7 @@
       </el-menu>
       <el-dropdown trigger="click" class="avatar flx-center">
         <div>
-            <el-avatar :size="30" src="/avatar.png" />
+            <el-avatar :size="30" src="/assets/avatar.png" />
         </div>
         <template #dropdown>
           <el-dropdown-menu>
